@@ -1,0 +1,41 @@
+cmake_minimum_required(VERSION 3.21)
+project(LinkinDAWWebRTCNativePeerPoC LANGUAGES C CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(NO_EXAMPLES ON CACHE BOOL "" FORCE)
+set(NO_TESTS ON CACHE BOOL "" FORCE)
+set(NO_MEDIA ON CACHE BOOL "" FORCE)
+set(NO_WEBSOCKET ON CACHE BOOL "" FORCE)
+set(WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+set(USE_MBEDTLS ON CACHE BOOL "" FORCE)
+set(ENABLE_PROGRAMS OFF CACHE BOOL "" FORCE)
+set(ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+set(MBEDTLS_FATAL_WARNINGS OFF CACHE BOOL "" FORCE)
+set(GEN_FILES ON CACHE BOOL "" FORCE)
+set(MBEDTLS_USER_CONFIG_FILE "${CMAKE_CURRENT_LIST_DIR}/mbedtls-user-config.h" CACHE FILEPATH "" FORCE)
+set(USE_STATIC_MBEDTLS_LIBRARY ON CACHE BOOL "" FORCE)
+set(USE_SHARED_MBEDTLS_LIBRARY OFF CACHE BOOL "" FORCE)
+
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../../../Dependencies/mbedtls" "${CMAKE_BINARY_DIR}/mbedtls")
+if(NOT TARGET MbedTLS::MbedTLS)
+  add_library(MbedTLS::MbedTLS INTERFACE IMPORTED)
+  target_link_libraries(MbedTLS::MbedTLS INTERFACE MbedTLS::mbedtls)
+endif()
+
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../../../Dependencies/libdatachannel" "${CMAKE_BINARY_DIR}/libdatachannel")
+
+add_executable(linkindaw-native-answer-peer native-answer-peer.cpp)
+target_link_libraries(linkindaw-native-answer-peer PRIVATE LibDataChannel::LibDataChannelStatic)
+
+if(MSVC)
+  target_compile_options(linkindaw-native-answer-peer PRIVATE /utf-8)
+endif()
+add_executable(linkindaw-native-bridge-probe native-linkindaw-bridge-probe.cpp)
+target_link_libraries(linkindaw-native-bridge-probe PRIVATE LibDataChannel::LibDataChannelStatic)
+
+if(MSVC)
+  target_compile_options(linkindaw-native-bridge-probe PRIVATE /utf-8)
+endif()

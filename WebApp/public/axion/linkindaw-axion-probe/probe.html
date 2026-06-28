@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AXION PROTOTYPE</title>
+  <link rel="icon" href="./assets/favicon.svg" />
+  <link rel="stylesheet" href="./src/styles/axion.css?v=axion-pages-128-keytags-20260522" />
+</head>
+<body>
+<div class="audio-arm-overlay" id="audioArmOverlay">
+  <button class="audio-arm-button" id="audioArmButton" type="button">Activate Audio Engine</button>
+  <div class="audio-arm-status" id="audioArmStatus">Audio engine waiting for user activation</div>
+</div>
+<div class="app" id="app">
+  <header class="topbar">
+    <div class="topbar-rail recess">
+      <div class="brand-block">
+        <div class="brand-stack">
+          <div class="brand" style="display: flex; align-items: center; gap: 22px;">
+            <img src="./assets/axion.webp" alt="AXION" style="height: 80px;">
+            <div class="top-controls">
+              <a href='https://ko-fi.com/dimproductions' target='_blank'><img height='50' style='border:0px;height: 50px;' src='./assets/kofi_symbol.svg' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+            </div>
+          </div>
+          <div class="subtitle">Fully Synthesized Percussion Engine</div>
+        </div>      </div>
+      <div class="transport"><button class="btn" id="playBtn">PLAY</button><button class="btn" id="stopBtn">STOP</button><button class="btn" id="recBtn">REC</button><button class="btn" id="exportBtn">EXP</button><button class="btn" id="importBtn">IMP</button><button class="btn" id="export808MidiBtn" title="Export 808 MIDI">808 MIDI</button><button class="btn" id="export808StemBtn" title="Export 808 WAV stem">808 WAV</button><button class="btn" id="howToBtn" aria-expanded="false" aria-controls="howToPanel">?</button></div>
+      <div class="bpm-inline"><span>BPM</span><strong id="bpmReadout">100.00</strong></div>
+      <div class="pages" id="pageButtons" style="position: relative; z-index: 10;"></div>
+      <div class="division-stack" id="beatDivisionButtons">
+        <button class="division-btn beat-division-btn" data-beat="0"><div class="division-main">4</div><div class="division-name">B1</div><div class="division-formula">slots 01-04<br>click: 4 ⇄ 3</div></button>
+        <button class="division-btn beat-division-btn" data-beat="1"><div class="division-main">4</div><div class="division-name">B2</div><div class="division-formula">slots 05-08<br>click: 4 ⇄ 3</div></button>
+        <button class="division-btn beat-division-btn" data-beat="2"><div class="division-main">4</div><div class="division-name">B3</div><div class="division-formula">slots 09-12<br>click: 4 ⇄ 3</div></button>
+        <button class="division-btn beat-division-btn" data-beat="3"><div class="division-main">4</div><div class="division-name">B4</div><div class="division-formula">slots 13-16<br>click: 4 ⇄ 3</div></button>
+      </div>
+      <div class="topbar-hidden-metrics" aria-hidden="true" style="display: none;">
+        <strong id="pageReadout">1-16</strong>
+        <strong id="visibleReadout">01-16</strong>
+        <div class="pattern-meter" id="patternMeter"></div>
+        <strong id="stepDeltaReadout">120.0 ms</strong>
+        <strong id="activeStepsReadout">16 / 16</strong>
+        <strong id="disabledReadout">NONE</strong>
+        <strong id="modeReadout">16TH</strong>
+      </div>
+    </div>
+    <div class="dimp-logo-block recess">
+      <img class="dimp-logo" src="./assets/dimp-logo.webp" alt="DIMP" />
+    </div>
+  </header>
+  <div id="howToPanel" class="howto-panel hidden" role="note" aria-label="AXION how to">
+    <div><strong>REC</strong><span>Press REC, then PLAY. Press REC again to save WAV. Trim start/end manually.</span></div>
+    <div><strong>EXP</strong><span>Export project as .axi.</span></div>
+    <div><strong>IMP</strong><span>Import saved .axi.</span></div>
+    <div><strong>BPM</strong><span>Click BPM value to set tempo.</span></div>
+    <div><strong>PAGE</strong><span>1-16 through 113-128 edit pages.</span></div>
+    <div><strong>DIV</strong><span>Division is page-specific.</span></div>
+  </div>
+
+  <main class="grid-section metal" id="gridSection"><div class="grid-head"><div class="section-title">SEQ</div><div class="step-numbers" id="stepNumbers"></div></div></main>
+
+  <section class="bottom-section">
+    <div class="panel metal" id="inspectorPanel">
+      <div class="panel-title"><span id="inspectorLabel">STEP INSPECTOR</span><small class="mode-pill" id="insTitle">HAT·STEP 03</small></div>
+      <div class="inspector-grid">
+        <div class="cell"><span>MODE</span><strong id="valMode">STEP</strong></div>
+        <div class="cell"><span>TRACK</span><strong id="valTrack">HAT</strong></div>
+        <div class="cell" id="stepCell"><span>STEP</span><strong id="valStep">03</strong></div>
+        <div class="cell interactive" id="onCell"><span>ON</span><strong id="valOn">ON</strong></div>
+        <div class="cell interactive" id="noteCell"><span>NOTE</span><strong id="valNote">--</strong></div>
+        <div class="cell interactive" id="velCell"><span>VELOCITY</span><strong id="valVel">100</strong></div>
+        <div class="cell interactive" id="subCell"><span>SUB</span><strong id="valSub">1</strong></div>
+        <div class="cell interactive" id="panCell"><span>PAN</span><strong id="valPan">--</strong></div>
+        <div class="cell interactive" id="slideCell"><span>SLIDE</span><strong id="valSlide">OFF</strong></div>
+        <div class="cell interactive" id="motionCell"><span>MOTION</span><strong id="valMotion">--</strong></div>
+        <div class="cell wide"><span id="paramTitle">PARAMETERS</span><div id="paramRows"></div></div>
+      </div>
+      <div class="telemetry" id="telemetryBlock"><div class="cell"><span>pll_lock</span><strong class="lock-led" id="telemetryLock">SEEKING</strong></div><div class="cell"><span>f_smooth</span><strong class="led-value" id="telemetryFreq">-- Hz</strong></div></div>
+    </div>
+    <div class="panel metal" id="scopePanel"><div class="panel-title"><span id="scopeTitle">MASTER OUT SCOPE</span><div class="scope-tabs"><button class="scope-tab active" id="scopeMasterBtn">MASTER</button><button class="scope-tab" id="scope808Btn">808</button></div></div><div class="scope-wrap recess"><div class="scope-label" id="scopeLabel">FINAL OUTPUT TRACE</div><canvas id="masterScope" class="scope-canvas"></canvas><canvas id="analyzerScope" class="scope-canvas hidden"></canvas>
+<div id="motionPanel" class="motion-panel hidden">
+  <div class="motion-controls">
+    <div class="motion-cell">
+      <span>GLIDE</span>
+      <strong id="motionGlideTime">-- ms</strong>
+    </div>
+    <div class="motion-cell">
+      <span>DROP</span>
+      <strong id="motionDrop">--%</strong>
+    </div>
+    <div class="motion-cell">
+      <span>DECAY</span>
+      <strong id="motionDecay">--%</strong>
+    </div>
+  </div>
+
+  <svg class="motion-viz" viewBox="0 0 800 120" preserveAspectRatio="none">
+    <g stroke="rgba(255,255,255,.08)" stroke-width="1">
+      <line x1="50" y1="25" x2="780" y2="25"/>
+      <line x1="50" y1="60" x2="780" y2="60"/>
+      <line x1="50" y1="95" x2="780" y2="95"/>
+      <line x1="200" y1="10" x2="200" y2="105"/>
+      <line x1="400" y1="10" x2="400" y2="105"/>
+      <line x1="600" y1="10" x2="600" y2="105"/>
+    </g>
+
+    <path id="motionGhostPath" d="M80 92 C200 92,320 92,440 92 S620 92,750 92" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="2"/>
+    <path id="motionPath" d="M80 92 C180 92,260 78,360 60 S540 32,750 25" fill="none" stroke="#9b4dff" stroke-width="3"/>
+
+    <circle id="motionStartDot" cx="80" cy="92" r="4" fill="#d2d8df"/>
+    <circle id="motionEndDot" cx="750" cy="25" r="4" fill="#d2d8df"/>
+
+    <text x="90" y="84" id="motionStartLabel" fill="#f0d890" font-size="10" font-family="monospace">Start --</text>
+    <text x="640" y="38" id="motionEndLabel" fill="#f0d890" font-size="10" font-family="monospace">End --</text>
+    <text x="80" y="116" id="motionFooter" fill="#f0d890" font-size="10" font-family="monospace">Glide --ms · Drop --% · Decay --%</text>
+  </svg>
+</div></div></div>
+    <div class="panel metal"><div class="panel-title"><span>POSITION MAP</span><small>PROTRACTOR FIELD</small></div><div class="scope-wrap recess"><div class="scope-label">L / CENTER / R · WIDTH / DEPTH</div><canvas id="positionMap"></canvas><div class="position-legend"><span>-90° L</span><span>0° CENTER</span><span>+90° R</span></div></div></div>
+  </section>
+</div>
+
+  <script type="module" src="./src/axion/linkindaw-webrtc-adapter.js?v=linkindaw-native808-20260628"></script>
+<script type="module" src="./src/axion/axion-app.js?v=linkindaw-browser-samplerate-20260628"></script>
+</body>
+</html>

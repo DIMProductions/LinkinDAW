@@ -1,0 +1,86 @@
+# Build outputs
+/build/
+/build-*/
+/out/
+/dist/
+*.obj
+*.pdb
+*.ilk
+*.lib
+*.exp
+*.dll
+*.exe
+*.app
+*.vst3/
+*.component/
+*.aaxplugin/
+
+# CMake / Visual Studio
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.user
+*.opensdf
+*.sdf
+*.suo
+*.ncb
+*.aps
+*.ipch
+
+# Web / Node
+WebApp/node_modules/
+WebApp/dist/
+WebApp/.vite/
+WebApp/.turbo/
+WebApp/.cache/
+WebApp/npm-debug.log*
+WebApp/yarn-debug.log*
+WebApp/yarn-error.log*
+WebApp/pnpm-debug.log*
+
+# Cloudflare / deployment local state
+.wrangler/
+wrangler.toml.local
+.dev.vars
+*.local
+.env
+.env.*
+!.env.example
+
+# Local exports and generated media
+/exports/
+*.wav
+*.mid
+*.flp
+*.zip
+*.7z
+*.rar
+
+# Local docs / private research notes
+~$*
+*.tmp
+*.bak
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Keep source dependency directories, but never commit nested build artifacts
+Dependencies/**/build/
+Dependencies/**/build-*/
+Dependencies/**/*.vcxproj.user
+
+# Private project research notes
+Web-DAW Connector Feasibility Research.docx
+
+# Backup binaries
+*.bak.wasm

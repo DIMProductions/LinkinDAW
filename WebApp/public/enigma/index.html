@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENIGMA Engine - Metallic</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#060708;
+    --steel-1:#f7faf8; --steel-2:#d7dadb; --steel-3:#b6b8bc;
+    --steel-4:#8a8d91; --steel-5:#666a6d; --steel-6:#3e4246; --steel-7:#1a1d21;
+    --cab-0:#161718; --cab-1:#101112; --cab-2:#070808;
+    --cyan:#028ec1; --cyan-soft:rgba(2,142,193,.22); --cyan-faint:rgba(2,142,193,.09);
+    --text-title: #e1e2e4; --text-sub: #b5b8bb;
+    --text-tab: #8a8d91; --text-mod: #d7dadb;
+    --text-small: #8a8d91; --text-num: #f7faf8; --text-label: #b6b8bc;
+    --meter-track: #070808; --meter-fill: #028ec1;
+  }
+  
+  * { box-sizing: border-box; user-select: none; }
+  
+  body {
+    margin: 0; padding: 40px;
+    background: radial-gradient(circle at 50% 22%, rgba(2,142,193,.16), transparent 32%),
+                radial-gradient(circle at 50% 50%, rgba(2,142,193,.07), transparent 58%), #000;
+    color: #f2f3f4;
+    font-family: 'Inter', system-ui, sans-serif;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh;
+  }
+
+  .plate-tile {
+    position: relative;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.025) 12%, rgba(0,0,0,.05) 55%, rgba(0,0,0,.16)),
+      conic-gradient(from 0deg, #dfe1e3, #f2f4f3, #8b8d91, #f7faf6, #626467, #d8dadd, #b8babd, #f2f3f5, #636267, #fbfbfb, #888a8d, #fcfefd, #dfe1e3);
+    box-shadow:
+      0 -1px 2px #e9edea, 0 1px 2px #0a0b0d, 0 0 0 3px #656765,
+      inset 0 -1px 2px #e9edea, inset 0 1px 2px #0a0b0d, inset 0 0 0 3px #656765;
+    overflow: hidden;
+  }
+
+  .chassis {
+    width: 1400px;
+    height: 900px;
+    border-radius: 34px;
+    padding: 26px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+  }
+
+  .dummy-screen {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01) 14%, rgba(0,0,0,.08) 100%),
+      linear-gradient(180deg, #171b1f 0%, #0c1013 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.06),
+      inset 0 -1px 0 rgba(0,0,0,.55),
+      inset 0 0 0 1px rgba(255,255,255,.035);
+    border-radius: 12px;
+  }
+
+  .header {
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1;
+  }
+
+  .brand { display: flex; flex-direction: column; gap: 4px; }
+  .title { font-size: 28px; font-weight: 800; color: var(--text-title); letter-spacing: 3px; }
+  .sub { font-size: 12px; color: var(--text-sub); letter-spacing: 1.5px; }
+
+  .tabs { display: flex; gap: 8px; }
+  .tab {
+    background: var(--cab-1);
+    border: 1px solid var(--steel-6);
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 13px; font-weight: 700;
+    color: var(--text-tab); letter-spacing: 1.2px;
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+  .tab.active { 
+    background: var(--cab-0); 
+    border-color: var(--cyan); 
+    color: #fff; 
+    box-shadow: 0 0 15px var(--cyan-soft), inset 0 0 0 1px var(--cyan); 
+  }
+
+  .modules-row {
+    display: flex;
+    justify-content: space-between;
+    z-index: 1;
+    height: 250px;
+  }
+
+  .module {
+    border-radius: 18px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .module.w240 { width: 240px; }
+  .module.w120 { width: 140px; }
+
+  .mod-title { font-size: 13px; font-weight: 800; color: var(--text-mod); letter-spacing: 1.4px; }
+  .mod-sub { font-size: 10px; color: var(--text-small); letter-spacing: 0.8px; margin-top: 4px; margin-bottom: 15px; }
+  
+  .label { font-size: 10px; font-weight: 700; color: var(--text-label); letter-spacing: 1px; }
+  .num { font-family: ui-monospace, monospace; font-size: 20px; font-weight: 800; color: var(--text-num); }
+
+  .slot {
+    padding: 10px;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .meter-box {
+    padding: 12px;
+    display: flex; flex-direction: column; gap: 8px;
+    flex: 1;
+  }
+  .meter-row { display: flex; gap: 8px; }
+
+  /* Dummy Knobs */
+  .knobs-container { display: flex; justify-content: space-around; flex: 1; align-items: center; }
+  .macro-knobs { display: flex; justify-content: space-around; align-items: center; flex: 1; margin-top: 10px; }
+  
+  .knob-wrapper { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+
+  .dummy-knob-well {
+    border-radius: 50%;
+    padding: 6px;
+    background: radial-gradient(circle at 50% 38%, rgba(255,255,255,.08) 0%, rgba(255,255,255,.02) 28%, rgba(0,0,0,.12) 62%, rgba(0,0,0,.24) 100%);
+    box-shadow: inset 0 1px 1px rgba(255,255,255,.05), inset 0 -2px 4px rgba(0,0,0,.36);
+    cursor: pointer;
+  }
+  .well-small { width: 66px; height: 66px; }
+  .well-large { width: 90px; height: 90px; padding: 8px; }
+
+  .dummy-knob {
+    width: 100%; height: 100%;
+    border-radius: 50%; position: relative;
+    background:
+      radial-gradient(circle at 32% 28%, rgba(255,255,255,.95) 0%, rgba(255,255,255,.28) 10%, rgba(255,255,255,.06) 20%, rgba(0,0,0,0) 24%),
+      conic-gradient(#e1e2e4, #f2f4f3, #86878b, #f5f9f3, #5b5d5d, #d9dadc, #b7b8bc, #f0f0f2, #5a595e, #fbfbfb, #838488, #fcfefd, #e1e2e4);
+    box-shadow:
+      0 -1px 2px #e9edea, 0 1px 2px #0a0b0d, 0 0 0 2px #656765,
+      inset 0 -1px 2px #e9edea, inset 0 1px 2px #0a0b0d, inset 0 0 0 2px #656765;
+    transform: rotate(-135deg); /* Default rotation */
+  }
+
+  .dummy-knob::after {
+    content: ""; position: absolute;
+    left: 50%; top: 6px;
+    width: 3px; height: 14px;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffffff, #9ee7ff 70%, #028ec1);
+    box-shadow: 0 0 8px rgba(2,142,193,.45);
+  }
+  .well-large .dummy-knob::after { height: 20px; top: 8px; width: 4px; }
+
+  .macro-rack {
+    border-radius: 20px;
+    height: 280px;
+    padding: 24px;
+    display: flex; flex-direction: column;
+    z-index: 1;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  }
+  
+  .var-ctrl { padding: 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .var-btn {
+    flex: 1; background: var(--cab-2); border: 1px solid var(--steel-6);
+    border-radius: 6px; padding: 7px 4px; font-size: 9px; font-weight: 800;
+    letter-spacing: 1.2px; color: var(--text-tab); cursor: pointer; transition: all 0.1s;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  .var-btn.active { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 6px var(--cyan-soft); }
+  .var-btn:active { background: var(--cyan); color: #fff; }
+
+  .layer-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; min-height: 28px; }
+  .layer-chip {
+    background: var(--cab-2); border: 1px solid var(--steel-6); border-radius: 6px;
+    padding: 5px 10px; font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    color: var(--text-tab); white-space: nowrap;
+  }
+  .layer-chip.on { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 8px var(--cyan-soft); }
+
+  .pulse-btn {
+    position: absolute; bottom: 30px; right: 30px;
+    background: var(--cab-1);
+    border: 1px solid var(--steel-6);
+    color: var(--cyan);
+    font-size: 14px; font-weight: 800; letter-spacing: 2px;
+    padding: 16px 32px; border-radius: 12px;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    transition: all 0.1s;
+  }
+  .pulse-btn:active {
+    background: var(--cyan); color: #fff;
+    box-shadow: 0 0 20px var(--cyan-soft);
+  }
+</style>
+</head>
+<body>
+
+<div class="chassis plate-tile">
+  <!-- HEADER -->
+  <div class="header dummy-screen">
+    <div class="brand">
+      <div class="title">ENIGMA</div>
+      <div class="sub">procedural interface / rotor / engine sound designer</div>
+    </div>
+    <div class="tabs">
+      <div class="tab active" data-preset="AUTH_LOCK">AUTH_LOCK</div>
+      <div class="tab" data-preset="SYS_BOOT">SYS_BOOT</div>
+      <div class="tab" data-preset="SYS_STANDBY">SYS_STANDBY</div>
+      <div class="tab" data-preset="IMPACT_CORE">IMPACT_CORE</div>
+      <div class="tab" data-preset="KINETIC_REF">KINETIC_REF</div>
+      <div class="tab" data-preset="HYBRID_CORE">HYBRID_CORE</div>
+      <div class="tab" data-preset="LONG_BOOM">LONG_BOOM</div>
+      <div class="tab" data-preset="HEAVY_LOCK">HEAVY_LOCK</div>
+      <div class="tab" data-preset="POWER_HIT">POWER_HIT</div>
+      <div class="tab" data-preset="MECH_START">MECH_START</div>
+    </div>
+  </div>
+
+  <!-- MODULES -->
+  <div class="modules-row">
+    <!-- 01 STATE -->
+    <div class="module plate-tile w240">
+      <div class="mod-title">01 STATE</div>
+      <div class="mod-sub">preset behavior layer</div>
+      <div class="slot dummy-screen">
+        <span class="label">ACTIVE PRESET</span>
+        <span class="num" id="active-preset-label">AUTH_LOCK</span>
+      </div>
+      <div class="var-ctrl dummy-screen">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span class="label">VARIATION SEED</span>
+          <span class="num" id="seed-display" style="font-size:11px;letter-spacing:1px;">FREE</span>
+        </div>
+        <div style="display:flex;gap:5px;">
+          <button class="var-btn active" id="btn-free">FREE</button>
+          <button class="var-btn" id="btn-roll">ROLL</button>
+          <button class="var-btn" id="btn-lock">LOCK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 MOTION -->
+    <div class="module plate-tile w240">
+      <div class="mod-title">02 MOTION</div>
+      <div class="mod-sub">rpm / throttle / wobble</div>
+      <div style="height:40px; border-bottom: 1px solid var(--steel-6); margin-bottom: 10px; display:flex; align-items:center;">
+        <span class="label">RPM CURVE</span>
+      </div>
+      <div class="knobs-container">
+        <div class="knob-wrapper" id="wrap-throttle">
+          <div class="dummy-knob-well well-small"><div class="dummy-knob" id="k-throttle"></div></div>
+          <span class="label">THROTTLE</span>
+        </div>
+        <div class="knob-wrapper" id="wrap-wobble">
+          <div class="dummy-knob-well well-small"><div class="dummy-knob" id="k-wobble"></div></div>
+          <span class="label">WOBBLE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 EXCITER -->
+    <div class="module plate-tile w240">
+      <div class="mod-title">03 EXCITER</div>
+      <div class="mod-sub">pressure injector</div>
+      <div class="slot dummy-screen" style="flex-direction:column; align-items:flex-start; gap:8px;">
+        <span class="label">PEAK + RMS DETECTOR</span>
+        <div style="width:100%; height:6px; background:var(--meter-track); border-radius:3px; overflow:hidden;">
+          <div class="meter-fill" style="width:70%; height:100%; background:var(--meter-fill); box-shadow:0 0 5px var(--meter-fill); transition: width 0.1s ease;"></div>
+        </div>
+      </div>
+      <div class="knobs-container">
+        <div class="knob-wrapper" id="wrap-drive">
+          <div class="dummy-knob-well well-small"><div class="dummy-knob" id="k-drive"></div></div>
+          <span class="label">DRIVE</span>
+        </div>
+        <div class="knob-wrapper" id="wrap-gate">
+          <div class="dummy-knob-well well-small"><div class="dummy-knob" id="k-gate"></div></div>
+          <span class="label">GATE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 BODY -->
+    <div class="module plate-tile w240">
+      <div class="mod-title">04 BODY</div>
+      <div class="mod-sub">modal bank / metallic shell</div>
+      <div class="slot dummy-screen" style="height:70px; flex-direction:column; justify-content:center;">
+        <span class="label" style="text-align:center;">MODES:<br>620 / 980 / 1560<br>2480 / 3720</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:20px;">
+        <span class="label">RESONANCE DECAY</span>
+        <div style="width:100%; height:8px; background:var(--meter-track); border-radius:4px; overflow:hidden;">
+          <div class="meter-fill" style="width:60%; height:100%; background:var(--meter-fill); box-shadow:0 0 5px var(--meter-fill); transition: width 0.1s ease;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05 SPACE -->
+    <div class="module plate-tile w120">
+      <div class="mod-title">05 SPACE</div>
+      <div class="mod-sub">air / tail</div>
+      <div class="knobs-container" style="flex-direction:column; justify-content:center; gap:20px;">
+        <div class="knob-wrapper" id="wrap-air">
+          <div class="dummy-knob-well well-small"><div class="dummy-knob" id="k-air"></div></div>
+          <span class="label">AIR / SLIDE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MACRO RACK -->
+  <div class="macro-rack plate-tile">
+    <div class="mod-title" style="font-size:16px;">MACRO CONTROLS</div>
+    <div class="mod-sub">sound intent first / internals remain patchable</div>
+    <div id="layer-chips" class="layer-chips"></div>
+    <div class="macro-knobs">
+      <div class="knob-wrapper" id="wrap-m_motion">
+        <div class="dummy-knob-well well-large"><div class="dummy-knob" id="k-m_motion"></div></div>
+        <span class="label" style="font-size:12px;">MOTION</span>
+      </div>
+      <div class="knob-wrapper" id="wrap-m_impact">
+        <div class="dummy-knob-well well-large"><div class="dummy-knob" id="k-m_impact"></div></div>
+        <span class="label" style="font-size:12px;">IMPACT</span>
+      </div>
+      <div class="knob-wrapper" id="wrap-m_metal">
+        <div class="dummy-knob-well well-large"><div class="dummy-knob" id="k-m_metal"></div></div>
+        <span class="label" style="font-size:12px;">METAL</span>
+      </div>
+      <div class="knob-wrapper" id="wrap-m_air">
+        <div class="dummy-knob-well well-large"><div class="dummy-knob" id="k-m_air"></div></div>
+        <span class="label" style="font-size:12px;">AIR</span>
+      </div>
+      
+      <button class="pulse-btn" id="btn-trigger">◎ INJECT (SPACE)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// State Store
+const EngineState = {
+  throttle: 0.5,
+  wobble: 0.2,
+  drive: 0.7,
+  gate: 0.9,
+  air: 0.4,
+  m_motion: 0.5,
+  m_impact: 0.8,
+  m_metal: 0.6,
+  m_air: 0.2,
+  
+  coherence: 0,
+  fatigue: 0
+};
+
+// Preset Definitions
+const Presets = {
+  AUTH_LOCK:   { layers:[{engine:'INTERFACE',gain:1.0}],                                        throttle:0.50, wobble:0.20, drive:0.70, gate:0.90, air:0.40, m_motion:0.50, m_impact:0.80, m_metal:0.60, m_air:0.20 },
+  SYS_BOOT:    { layers:[{engine:'INTERFACE',gain:1.0}],                                        throttle:0.20, wobble:0.10, drive:1.00, gate:0.50, air:0.20, m_motion:0.20, m_impact:1.00, m_metal:0.80, m_air:0.10 },
+  SYS_STANDBY: { layers:[{engine:'INTERFACE',gain:1.0}],                                        throttle:0.10, wobble:0.50, drive:0.40, gate:0.90, air:1.00, m_motion:0.40, m_impact:0.20, m_metal:0.40, m_air:1.00 },
+  IMPACT_CORE: { layers:[{engine:'IMPACT',gain:1.0}],                                           throttle:0.40, wobble:0.08, drive:0.92, gate:1.00, air:0.32, m_motion:0.22, m_impact:1.00, m_metal:0.92, m_air:0.30 },
+  KINETIC_REF: { layers:[{engine:'KINETIC',gain:1.0}],                                          throttle:0.72, wobble:0.82, drive:0.46, gate:0.72, air:0.78, m_motion:1.00, m_impact:0.22, m_metal:0.28, m_air:0.75 },
+  HYBRID_CORE: { layers:[{engine:'HYBRID',gain:1.0}],                                           throttle:0.84, wobble:0.46, drive:0.95, gate:0.92, air:0.76, m_motion:0.86, m_impact:0.82, m_metal:0.78, m_air:0.62 },
+  LONG_BOOM:   { layers:[{engine:'BOOM',gain:1.0}],                                             throttle:0.40, wobble:0.05, drive:0.75, gate:1.00, air:0.55, m_motion:0.30, m_impact:1.00, m_metal:0.50, m_air:0.60 },
+  HEAVY_LOCK:  { layers:[{engine:'IMPACT',gain:1.0},{engine:'INTERFACE',gain:0.55}],            throttle:0.65, wobble:0.12, drive:0.88, gate:1.00, air:0.28, m_motion:0.30, m_impact:0.95, m_metal:0.70, m_air:0.18 },
+  POWER_HIT:   { layers:[{engine:'IMPACT',gain:1.0},{engine:'BOOM',gain:0.55}],                 throttle:0.42, wobble:0.05, drive:0.90, gate:1.00, air:0.45, m_motion:0.28, m_impact:1.00, m_metal:0.60, m_air:0.50 },
+  MECH_START:  { layers:[{engine:'KINETIC',gain:1.0},{engine:'IMPACT',gain:0.62}],              throttle:0.72, wobble:0.45, drive:0.70, gate:0.88, air:0.60, m_motion:0.95, m_impact:0.72, m_metal:0.42, m_air:0.55 }
+};
+
+let currentPresetName = 'AUTH_LOCK';
+
+// Knob rotation mapped from -135 to +135 degrees (270 degree span)
+function renderKnobVisual(id, value) {
+  const knob = document.getElementById('k-' + id);
+  if (!knob) return;
+  const degrees = -135 + (270 * value);
+  knob.style.transform = `rotate(${degrees}deg)`;
+}
+
+function updateAllKnobs() {
+  ['throttle', 'wobble', 'drive', 'gate', 'air', 'm_motion', 'm_impact', 'm_metal', 'm_air'].forEach(id => {
+    renderKnobVisual(id, EngineState[id]);
+  });
+}
+
+// Knob Drag Logic
+function attachKnobDrag(id) {
+  const wrap = document.getElementById('wrap-' + id);
+  if (!wrap) return;
+  
+  let isDragging = false;
+  let startY = 0;
+  let startVal = 0;
+  
+  const updateVal = (newVal) => {
+    EngineState[id] = Math.max(0, Math.min(1, newVal));
+    renderKnobVisual(id, EngineState[id]);
+    const p = Presets[currentPresetName];
+    if (p && (p.engineType === 'MOTION' || p.engineType === 'MIXED') && typeof sendParams === 'function') sendParams();
+  };
+  
+  wrap.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    startY = e.clientY;
+    startVal = EngineState[id];
+    document.body.style.cursor = 'ns-resize';
+  });
+  
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const dy = startY - e.clientY;
+    updateVal(startVal + dy * 0.005);
+  });
+  
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+    document.body.style.cursor = 'default';
+  });
+  
+  renderKnobVisual(id, EngineState[id]);
+}
+
+// Initialize all knobs
+['throttle', 'wobble', 'drive', 'gate', 'air', 'm_motion', 'm_impact', 'm_metal', 'm_air'].forEach(id => attachKnobDrag(id));
+
+// Tab logic
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    // Update active class
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    
+    // Get preset name and update state
+    const presetName = tab.getAttribute('data-preset');
+    if (Presets[presetName]) {
+      currentPresetName = presetName;
+      Object.assign(EngineState, Presets[presetName]);
+      updateAllKnobs();
+      updateLayerDisplay();
+      document.getElementById('active-preset-label').innerText = presetName;
+      
+      // Auto-trigger sound for feedback
+      document.getElementById('btn-trigger').click();
+    }
+  });
+});
+
+// =====================================================================
+// PROCEDURAL AUDIO ENGINE (WEEN MODULAR INTEGRATION)
+// =====================================================================
+let ac = null, nodeWeen = null, nodeHybrid = null, nodeWeenGain = null, nodeHybridGain = null, ready = false;
+
+const workletCode = `class PureWeenModularV2 extends AudioWorkletProcessor{constructor(){super();this.active=false;this.t=0;this.duration=1.22;this.phase=0;this.commPhase=0;this.rng=0x87654321>>>0;this.noiseState=0;this.noiseLP1=0;this.noiseLP2=0;this.hpState=0;this.hpX1=0;this.prevComm=0;this.commLP=0;this.paramsState={glideTime:.18,startHz:26,endHz:118,loadDip:8,loadTime:.29,loadWidth:.16,commAmount:.22,commRate:3,frictionAmt:.24,wobbleDepth:0,wobbleRate:2.2,resoScale:1,bodyMix:.82,airAmt:.12,outGain:.92,metalAmt:.5,impactAmt:.5,motionProfile:'KINETIC_REF'};this.resBase=[{f:640,q:6.5,g:.20},{f:980,q:8,g:.30},{f:1500,q:9.5,g:.52},{f:2350,q:10,g:.42},{f:3350,q:9,g:.18}];this.res=this.resBase.map(r=>({...r,s1:0,s2:0}));this.port.onmessage=e=>{const d=e.data||{};if(d.type==='trigger'){this.active=true;this.t=0;this.phase=0;this.commPhase=0;this.noiseState=0;this.noiseLP1=0;this.noiseLP2=0;this.hpState=0;this.hpX1=0;this.prevComm=0;this.commLP=0;for(const rr of this.res){rr.s1=0;rr.s2=0}}else if(d.type==='params'){this.paramsState={...this.paramsState,...d.payload}}}}rand(){this.rng=(Math.imul(this.rng,1664525)+1013904223)>>>0;return(((this.rng>>>8)&0x00FFFFFF)/8388608)-1}clamp(x,lo,hi){return x<lo?lo:(x>hi?hi:x)}smoothstep(a,b,x){if(x<=a)return 0;if(x>=b)return 1;const t=(x-a)/(b-a);return t*t*(3-2*t)}rpmCurve(t){const p=this.paramsState;const glide=Math.max(.005,p.glideTime);const rise=1-Math.exp(-t/glide*2.35);let hz=p.startHz+(p.endHz-p.startHz)*rise;const w=Math.max(.01,p.loadWidth);hz-=Math.exp(-Math.pow((t-p.loadTime)/w,2))*p.loadDip;const release=this.smoothstep(.80,1.20,t);hz-=release*Math.max(0,p.endHz-p.startHz)*.18;return Math.max(6,hz)}ampEnv(t){return this.smoothstep(0,.025,t)*(1-this.smoothstep(.92,1.22,t))}process(inputs,outputs){const out=outputs[0][0],sr=sampleRate;for(let i=0;i<out.length;i++){let y=0;if(this.active){const t=this.t;if(t>=this.duration){this.active=false;out[i]=0;this.t+=1/sr;continue}const p=this.paramsState,amp=this.ampEnv(t),isK=p.motionProfile==='KINETIC_REF',rotorHz=this.rpmCurve(t);this.phase+=rotorHz/sr;if(this.phase>=1)this.phase-=1;this.commPhase+=(rotorHz*p.commRate)/sr;if(this.commPhase>=1)this.commPhase-=1;const rotorSin=Math.sin(2*Math.PI*this.phase),rotorSaw=this.phase*2-1,rotorTri=1-4*Math.abs(this.phase-.5);const commPulse=Math.exp(-Math.pow((this.commPhase-(isK?.18:.10))/(isK?.12:.060),2))+(isK?.25:.45)*Math.exp(-Math.pow((this.commPhase-.47)/(isK?.13:.075),2));const dComm=Math.max(0,commPulse-this.prevComm);this.prevComm=commPulse;this.commLP=this.commLP*(isK?.985:.94)+dComm*(isK?.015:.06);const white=this.rand();this.noiseState=this.noiseState*(isK?.94:.86)+white*(isK?.06:.14);const lpA1=this.clamp((850+rotorHz*9)/sr,.001,.25),lpA2=this.clamp((2050+rotorHz*15+p.metalAmt*2200)/sr,.001,.25);this.noiseLP1+=(this.noiseState-this.noiseLP1)*lpA1;this.noiseLP2+=(this.noiseLP1-this.noiseLP2)*lpA2;const hpFc=260+p.metalAmt*900,hpA=Math.exp(-2*Math.PI*hpFc/sr);const hp=hpA*(this.hpState+this.noiseLP2-this.hpX1);this.hpX1=this.noiseLP2;this.hpState=hp;const hit=Math.exp(-Math.pow((t-.115)/.018,2))*p.impactAmt*(isK?.08:.55)+Math.exp(-Math.pow((t-.36)/.035,2))*p.impactAmt*(isK?.04:.20);const friction=hp*p.frictionAmt*(.45+p.metalAmt*1.15)*(isK?.55:1);let exc=rotorSin*.055+rotorSaw*.035+rotorTri*.020+friction+this.commLP*p.commAmount*(isK?.08:.28)+hit;exc=Math.tanh(exc*(1.05+p.metalAmt*.8))/(1.05+p.metalAmt*.8);const wob=Math.sin(2*Math.PI*p.wobbleRate*t)*p.wobbleDepth*this.smoothstep(.08,.30,t)*(1-this.smoothstep(.80,1.20,t));let resonant=0;for(let r=0;r<this.res.length;r++){const rr=this.res[r];const metalShift=1+p.metalAmt*(r<2?.10:.55);const f=rr.f*p.resoScale*metalShift*(1+wob*(r<2?1:.45));const q=rr.q*(1+p.metalAmt*(isK?.35:1.2));const rad=Math.exp(-Math.PI*f/(q*sr/1.55));const th=2*Math.PI*f/sr;const c=2*rad*Math.cos(th),r2=rad*rad;const sv=exc*rr.g+c*rr.s1-r2*rr.s2;rr.s2=rr.s1;rr.s1=sv;resonant+=sv}const late=this.smoothstep(.52,.90,t);const air=Math.abs(friction)*p.airAmt*(.040+p.metalAmt*.075)*late;let raw=resonant*p.bodyMix+friction*(.035+p.metalAmt*.16)+air;raw*=amp*(isK?.82:1.20);raw=Math.tanh(raw*(1.05+p.metalAmt*1.7));y=raw*p.outGain}out[i]=y;this.t+=1/sr}return true}}registerProcessor('pure-ween-modular-v2',PureWeenModularV2);
+
+class HybridInterfaceModular extends AudioWorkletProcessor {
+  constructor() {
+    super();
+    this.active = false;
+    this.t = 0;
+    this.duration = 1.22;
+    this.phase = 0;
+    this.phase808 = 0;
+    this.commPhase = 0;
+    this.rng = 0x87654321 >>> 0;
+    this.prevComm = 0;
+    this.commLP = 0;
+    
+    this.paramsState = {
+      glideTime: 0.18, startHz: 26, endHz: 118, loadDip: 8, loadTime: 0.29, loadWidth: 0.16,
+      commAmount: 0.22, commRate: 3, frictionAmt: 0.24, wobbleDepth: 0, wobbleRate: 2.2,
+      resoScale: 1, bodyMix: 0.82, airAmt: 0.12, slideAmt: 0, subAmt: 0.65, metalAmt: 0.6, impactAmt: 0.7, outGain: 0.92
+    };
+    
+    this.port.onmessage = e => {
+      const d = e.data || {};
+      if (d.type === 'trigger') {
+        this.active = true;
+        this.t = 0;
+        this.phase = 0;
+        this.phase808 = 0;
+        this.commPhase = 0;
+        this.prevComm = 0;
+        this.commLP = 0;
+      } else if (d.type === 'params') {
+        this.paramsState = { ...this.paramsState, ...d.payload };
+      }
+    }
+  }
+  
+  rand() {
+    this.rng = (Math.imul(this.rng, 1664525) + 1013904223) >>> 0;
+    return (((this.rng >>> 8) & 0x00FFFFFF) / 8388608) - 1;
+  }
+  
+  smoothstep(a, b, x) {
+    if (x <= a) return 0;
+    if (x >= b) return 1;
+    const t = (x - a) / (b - a);
+    return t * t * (3 - 2 * t);
+  }
+  
+  rpmCurve(t) {
+    const p = this.paramsState;
+    const glide = Math.max(0.005, p.glideTime);
+    const rise = 1 - Math.exp(-t / glide * 2.35);
+    let hz = p.startHz + (p.endHz - p.startHz) * rise;
+    const w = Math.max(0.01, p.loadWidth);
+    hz -= Math.exp(-Math.pow((t - p.loadTime) / w, 2)) * p.loadDip;
+    const release = this.smoothstep(0.80, 1.20, t);
+    hz -= release * Math.max(0, p.endHz - p.startHz) * 0.18;
+    return Math.max(6, hz);
+  }
+  
+  ampEnv(t) {
+    return this.smoothstep(0, 0.025, t) * (1 - this.smoothstep(0.92, 1.22, t));
+  }
+  
+  process(inputs, outputs) {
+    const out = outputs[0][0], sr = sampleRate;
+    for (let i = 0; i < out.length; i++) {
+      let y = 0;
+      if (this.active) {
+        const t = this.t;
+        if (t >= this.duration) {
+          this.active = false;
+          out[i] = 0;
+          this.t += 1 / sr;
+          continue;
+        }
+        
+        const p = this.paramsState;
+        const amp = this.ampEnv(t);
+        let rotorHz = this.rpmCurve(t);
+        
+        const slideProgress = this.smoothstep(0.04, 0.58, t);
+        rotorHz *= (1.0 + slideProgress * p.slideAmt * 8.0);
+        
+        const carrierFreq = 1000 + rotorHz * 20 * p.resoScale * (1 + p.metalAmt * 0.25);
+        const subStart = 34 + p.subAmt * 50 + p.impactAmt * 16;
+        const subEnd = 22 + p.subAmt * 18;
+        const subHz = subStart * Math.pow(Math.max(0.2, subEnd / subStart), slideProgress);
+        this.phase808 += subHz / sr;
+        if (this.phase808 >= 1) this.phase808 -= 1;
+        
+        const wobble = Math.sin(2 * Math.PI * p.wobbleRate * t) * p.wobbleDepth;
+        const modFreq = 500 + rotorHz * 5 * (1 + wobble) * (1 + p.metalAmt * 0.18);
+        
+        this.phase += carrierFreq / sr;
+        if (this.phase >= 1) this.phase -= 1;
+        
+        const modPhase = (t * modFreq) % 1;
+        const modulator = Math.sin(2 * Math.PI * modPhase);
+        
+        this.commPhase += (rotorHz * p.commRate) / sr;
+        if (this.commPhase >= 1) this.commPhase -= 1;
+        const commPulse = Math.exp(-Math.pow((this.commPhase - 0.10) / 0.060, 2));
+        const dComm = Math.max(0, commPulse - this.prevComm);
+        this.prevComm = commPulse;
+        this.commLP = this.commLP * 0.9 + dComm * 0.1;
+        
+        const glitch = (this.rand() * 2 - 1) * this.commLP * p.commAmount * (3.5 + p.metalAmt * 5.5);
+        
+        let raw = Math.sin(2 * Math.PI * this.phase + modulator * p.bodyMix * 2 + glitch);
+        const subEnv = this.smoothstep(0.0, 0.018, t) * (1 - this.smoothstep(0.46, 1.08, t));
+        const sub = Math.sin(2 * Math.PI * this.phase808) * subEnv * p.subAmt * (0.35 + p.slideAmt * 0.55);
+        
+        const crushFactor = Math.floor(rotorHz * 50);
+        if (crushFactor > 0) {
+            const crushT = Math.floor(t * crushFactor) / crushFactor;
+            raw += Math.sin(2 * Math.PI * (1500 + p.metalAmt * 1800) * crushT) * p.frictionAmt * (0.25 + p.metalAmt * 0.55);
+        }
+        
+        const hit = Math.exp(-Math.pow((t - 0.055) / 0.020, 2)) * p.impactAmt * 0.28;
+        raw = raw * amp * 0.62 + sub + hit;
+        raw *= p.outGain * (0.72 + p.metalAmt * 0.18);
+        y = Math.tanh(raw * 1.5);
+      }
+      out[i] = y;
+      this.t += 1 / sr;
+    }
+    return true;
+  }
+}
+registerProcessor('hybrid-interface-modular', HybridInterfaceModular);`;
+
+function mapEnigmaToWeen(state) {
+  const isHybrid = currentPresetName === 'HYBRID_CORE';
+  const isKinetic = currentPresetName === 'KINETIC_REF';
+  return {
+    glideTime: isKinetic ? 0.18 + (1 - state.throttle) * 0.45 : 0.035 + (1 - state.throttle) * 0.20,
+    startHz: isKinetic ? 16 + state.throttle * 26 : 18 + state.throttle * 56,
+    endHz: isKinetic ? 55 + state.throttle * 88 : 70 + state.throttle * 190,
+    loadDip: (isKinetic ? 1.5 : 5.0) + state.m_motion * (isKinetic ? 6 : 20),
+    loadTime: isKinetic ? 0.18 + state.m_motion * 0.28 : 0.08 + state.m_motion * 0.16,
+    loadWidth: isKinetic ? 0.16 + state.m_motion * 0.28 : 0.035 + state.m_motion * 0.14,
+    commAmount: state.drive * (isKinetic ? 0.18 : 0.52),
+    commRate: (isKinetic ? 1.2 : 2.8) + state.throttle * (isKinetic ? 2.0 : 5.2),
+    frictionAmt: state.drive * (0.16 + state.m_metal * (isKinetic ? 0.20 : 0.55)),
+    wobbleDepth: state.wobble * (isKinetic ? 0.020 : 0.006),
+    wobbleRate: 1 + state.wobble * 8,
+    resoScale: 0.72 + state.m_metal * 0.72,
+    bodyMix: 0.35 + state.m_metal * 0.95,
+    airAmt: state.air * (0.14 + state.m_metal * 0.18) + state.m_air * 0.18,
+    slideAmt: isHybrid ? 0.30 + state.air * 0.70 : state.air * 0.18,
+    subAmt: isHybrid ? 0.45 + state.m_motion * 0.45 + state.throttle * 0.20 : 0.0,
+    metalAmt: state.m_metal,
+    impactAmt: state.m_impact,
+    motionProfile: isKinetic ? 'KINETIC_REF' : currentPresetName,
+    outGain: 0.9
+  };
+}
+
+async function ensureAudio() {
+  if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+  if (ac.state === 'suspended') await ac.resume();
+  if (!ready) {
+    const blob = new Blob([workletCode], { type: 'application/javascript' });
+    const url = URL.createObjectURL(blob);
+    await ac.audioWorklet.addModule(url);
+    URL.revokeObjectURL(url);
+    
+    const gain = ac.createGain();
+    gain.gain.value = 0.95;
+    gain.connect(ac.destination);
+    
+    nodeWeen = new AudioWorkletNode(ac, 'pure-ween-modular-v2', {
+      numberOfOutputs: 1,
+      outputChannelCount: [1]
+    });
+    nodeWeenGain = ac.createGain();
+    nodeWeenGain.gain.value = 1.0;
+    nodeWeen.connect(nodeWeenGain);
+    nodeWeenGain.connect(gain);
+
+    nodeHybrid = new AudioWorkletNode(ac, 'hybrid-interface-modular', {
+      numberOfOutputs: 1,
+      outputChannelCount: [1]
+    });
+    nodeHybridGain = ac.createGain();
+    nodeHybridGain.gain.value = 1.0;
+    nodeHybrid.connect(nodeHybridGain);
+    nodeHybridGain.connect(gain);
+    
+    ready = true;
+  }
+}
+
+function sendParams() {
+  const payload = mapEnigmaToWeen(EngineState);
+  if (nodeWeen) nodeWeen.port.postMessage({ type: 'params', payload });
+  if (nodeHybrid) nodeHybrid.port.postMessage({ type: 'params', payload });
+}
+
+let actxOld = null;
+function getOldAudioCtx() {
+  if (!actxOld) actxOld = new (window.AudioContext || window.webkitAudioContext)();
+  return actxOld;
+}
+
+let renderSeed = null;
+let lastUsedSeed = null;
+
+function makeLCG(seed) {
+  let s = (seed >>> 0) || 1;
+  return () => {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+}
+
+async function renderEnigmaProcedural() {
+  const sr = 48000;
+  const durS = 0.6;
+  const n = Math.floor(sr * durS);
+  const out = new Float32Array(n);
+  
+  const m_motion = EngineState.m_motion;
+  const m_impact = EngineState.m_impact;
+  const m_metal  = EngineState.m_metal;
+  const m_air    = EngineState.m_air;
+  
+  const throttle = EngineState.throttle;
+  const wobble   = EngineState.wobble;
+  const drive    = EngineState.drive;
+  const gate     = EngineState.gate;
+  
+  const _seed = renderSeed !== null ? renderSeed : (Math.random() * 0xFFFFFFFF | 0);
+  lastUsedSeed = _seed;
+  const rng = makeLCG(_seed);
+  const isAlpha = rng() > throttle;
+
+  if (isAlpha) {
+    const body_amp = 0.5 + m_metal * 0.5;
+    const body_freq = 30 + m_motion * 40;
+    const shock_int = 0.5 + m_impact * 1.5;
+    const tunnel_depth = 0.2 + m_motion * 1.2;
+    const light_drive = 0.5 + drive * 1.5;
+    
+    for (let i = 0; i < n; i++) {
+      const t = i / sr;
+      let val = 0.0;
+      
+      const body_env = t >= 0.280 ? Math.max(0.0, 1.0 - (t - 0.280) / 0.110) : 1.0;
+      val += body_amp * Math.sin(2 * Math.PI * body_freq * t) * body_env;
+      
+      if (t >= 0.045 && t < 0.115) {
+        val += (rng() * 2 - 1) * shock_int;
+      } else if (t >= 0.115 && t < 0.280) {
+        const progress = (t - 0.115) / (0.280 - 0.115);
+        const dt = t - 0.115;
+        const phase = 2 * Math.PI * ((500 + m_motion*500) * dt + (2000 - 500) / 2 * dt * progress);
+        val += Math.sin(phase) * tunnel_depth;
+      } else if (t >= 0.280 && t < 0.390) {
+        const light_sig = Math.sin(2 * Math.PI * (2000 + wobble*1000) * t) + Math.sin(2 * Math.PI * 3750 * t);
+        val += light_sig * 0.5;
+        val = Math.tanh(val * light_drive);
+      } else if (t >= 0.390) {
+        const strand_sig = Math.sin(2 * Math.PI * (3000 + m_metal*4000) * t);
+        const decay = 1.0 - ((t - 0.390) / (0.6 - 0.390));
+        val += strand_sig * Math.max(0, decay) * (0.4 + m_air * 0.6);
+      }
+      
+      let global_env = 1.0;
+      if (t < 0.01) global_env = t / 0.01;
+      else if (t > 0.6 - 0.05) global_env = Math.max(0, (0.6 - t) / 0.05);
+      
+      if (gate < 1.0 && rng() > gate && t > 0.1) global_env *= 0.1;
+      
+      val *= global_env;
+      val *= 0.35;
+      out[i] = Math.max(-1.0, Math.min(1.0, val));
+    }
+  } else {
+    const whine_amp = 0.3 + m_metal * 0.6;
+    const whine_freq = 4000 + m_motion * 4000;
+    const glitch_int = 0.5 + m_impact * 2.0;
+    const desc_start = 1000 + m_motion * 3000;
+    const desc_end = 50 + m_motion * 100;
+    const flicker_rate = 10.0 + wobble * 40.0;
+    const tail_noise = m_air * 1.5;
+    
+    for (let i = 0; i < n; i++) {
+      const t = i / sr;
+      let val = 0.0;
+      
+      const whine_mod = Math.sin(2 * Math.PI * (10 + wobble*20) * t);
+      val += whine_amp * Math.sin(2 * Math.PI * whine_freq * t + whine_mod) * (0.2 + drive*0.5);
+      
+      if (t < 0.1) {
+        if (rng() > (1.0 - gate * 0.5)) val += (rng() * 2 - 1) * glitch_int;
+      } else if (t < 0.3) {
+        const progress = (t - 0.1) / 0.2;
+        const ln_b = Math.log(desc_end / desc_start);
+        const phase = 2 * Math.PI * desc_start * ((Math.pow(desc_end / desc_start, progress) - 1.0) / ln_b) * 0.2;
+        val += Math.sin(phase) * (0.5 + m_metal*0.5);
+      } else if (t < 0.45) {
+        const carrier = Math.sin(2 * Math.PI * (2000 + m_metal*2000) * t);
+        const modulator = Math.sin(2 * Math.PI * flicker_rate * t) > 0 ? 1 : 0;
+        val += carrier * modulator * (0.5 + drive*0.5);
+      } else if (t >= 0.45) {
+        const decay = 1.0 - ((t - 0.45) / 0.15);
+        const crush_t = Math.floor(t * (4000 + drive*8000)) / (4000 + drive*8000);
+        const crush_sig = Math.sin(2 * Math.PI * 1500 * crush_t);
+        const noise = (rng() * 2 - 1) * tail_noise;
+        val += (crush_sig + noise) * Math.max(0, decay);
+      }
+      
+      let global_env = 1.0;
+      if (t < 0.01) global_env = t / 0.01;
+      else if (t > 0.6 - 0.05) global_env = Math.max(0, (0.6 - t) / 0.05);
+      
+      val *= global_env;
+      val *= 0.35;
+      out[i] = Math.max(-1.0, Math.min(1.0, val));
+    }
+  }
+
+  const ctx = getOldAudioCtx();
+  const buf = ctx.createBuffer(1, n, sr);
+  buf.copyToChannel(out, 0);
+  return buf;
+}
+
+// Spectrally fitted to sample/ufx2_short_oxxx.wav:
+// sub sine glide 83->38Hz (tau 0.15s, amp tau 0.10s) + band-limited noise
+// transients, plus a quieter echo hit at t=0.175s (the "oxxx" double knock).
+async function renderImpactCoreProcedural() {
+  const sr = 48000;
+  const durS = 0.7;
+  const n = Math.floor(sr * durS);
+  const out = new Float32Array(n);
+
+  const impact = EngineState.m_impact;
+  const metal = EngineState.m_metal;
+  const air = EngineState.air * 0.55 + EngineState.m_air * 0.45;
+  const drive = EngineState.drive;
+  const motion = EngineState.m_motion;
+  const gate = EngineState.gate;
+
+  let seed = 0x1a2b3c4d >>> 0;
+  const rand = () => {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    return (((seed >>> 8) & 0x00FFFFFF) / 8388608) - 1;
+  };
+
+  const fBase = 36 + motion * 10;
+  const t2hit = 0.175;
+  const satAmt = 2.2 * drive;
+  // gains carry rms-normalization makeup for each noise chain
+  const punchG = 1.7 * impact * 25.6;
+  const punch2G = 0.4 * gate * impact * 25.6;
+  const midG = (0.2 + metal * 0.55) * 5.56;
+  const hiG = metal * 1.3 * 3.24;
+  const airG = air * 1.5 * 4.05;
+
+  const aPunchLp = 1 - Math.exp(-2 * Math.PI * 450 / sr);
+  const aPunchHp = Math.exp(-2 * Math.PI * 110 / sr);
+  const aMidLp = 1 - Math.exp(-2 * Math.PI * 2000 / sr);
+  const aMidHp = Math.exp(-2 * Math.PI * 500 / sr);
+  const aHiLp = 1 - Math.exp(-2 * Math.PI * 8000 / sr);
+  const aHiHp = Math.exp(-2 * Math.PI * 2000 / sr);
+  const aAirHp = Math.exp(-2 * Math.PI * 8000 / sr);
+
+  let pl1 = 0, pl2 = 0, pl3 = 0, pl4 = 0, phpY = 0, phpX = 0;
+  let ml = 0, mhpY = 0, mhpX = 0;
+  let hl = 0, hhpY = 0, hhpX = 0;
+  let ahpY = 0, ahpX = 0;
+  let ph1 = 0, ph2 = 0;
+
+  for (let i = 0; i < n; i++) {
+    const t = i / sr;
+    const white = rand();
+
+    // sub hit 1
+    const f1 = fBase + 45 * Math.exp(-t / 0.15);
+    ph1 += f1 / sr;
+    if (ph1 >= 1) ph1 -= 1;
+    const sat = 1 + satAmt * Math.exp(-t / 0.02);
+    const e1 = Math.min(1, t / 0.04) * Math.exp(-t / 0.10);
+    let sub = Math.tanh(Math.sin(2 * Math.PI * ph1) * sat) / Math.tanh(sat) * e1 * impact;
+
+    // sub hit 2 (echo)
+    const tt = t - t2hit;
+    if (tt >= 0) {
+      const f2 = fBase + 45 * Math.exp(-tt / 0.15);
+      ph2 += f2 / sr;
+      if (ph2 >= 1) ph2 -= 1;
+      const e2 = Math.min(1, tt / 0.02) * Math.exp(-tt / 0.20);
+      sub += Math.tanh(Math.sin(2 * Math.PI * ph2) * sat) / Math.tanh(sat) * e2 * impact * 0.26 * gate;
+    }
+
+    // punch noise 110-450Hz (4x LP + HP)
+    pl1 += (white - pl1) * aPunchLp;
+    pl2 += (pl1 - pl2) * aPunchLp;
+    pl3 += (pl2 - pl3) * aPunchLp;
+    pl4 += (pl3 - pl4) * aPunchLp;
+    const php = aPunchHp * (phpY + pl4 - phpX);
+    phpX = pl4; phpY = php;
+    let punch = php * punchG * Math.exp(-t / 0.030);
+    if (tt >= 0) punch += php * punch2G * Math.exp(-tt / 0.045);
+
+    // mid noise 500-2000
+    ml += (white - ml) * aMidLp;
+    const mhp = aMidHp * (mhpY + ml - mhpX);
+    mhpX = ml; mhpY = mhp;
+    const mid = mhp * midG * Math.exp(-t / 0.022);
+
+    // hi noise 2000-8000
+    hl += (white - hl) * aHiLp;
+    const hhp = aHiHp * (hhpY + hl - hhpX);
+    hhpX = hl; hhpY = hhp;
+    const hi = hhp * hiG * Math.exp(-t / 0.020);
+
+    // air noise >8k
+    const ahp = aAirHp * (ahpY + white - ahpX);
+    ahpX = white; ahpY = ahp;
+    const airC = ahp * airG * Math.exp(-t / 0.016);
+
+    const y = Math.tanh(sub + punch + mid + hi + airC) * 0.90;
+    out[i] = Math.max(-1, Math.min(1, y));
+  }
+
+  const ctx = getOldAudioCtx();
+  const buf = ctx.createBuffer(1, n, sr);
+  buf.copyToChannel(out, 0);
+  return buf;
+}
+
+// Spectrally fitted to sample/ufx3_impact_boom.wav:
+// near-pure sub sine, f0 = fEnd + (fStart-fEnd)*exp(-t/0.35) (~88->40Hz),
+// ~120ms swell into a tau~1.0s tail, plus a 110-450Hz thump burst and a
+// short hi click at the onset. Noise is band-limited, not broadband.
+async function renderLongBoomProcedural() {
+  const sr = 48000;
+  const durS = 4.5;
+  const n = Math.floor(sr * durS);
+  const out = new Float32Array(n);
+
+  const impact = EngineState.m_impact;
+  const metal  = EngineState.m_metal;
+  const air    = EngineState.air * 0.5 + EngineState.m_air * 0.5;
+  const drive  = EngineState.drive;
+  const motion = EngineState.m_motion;
+
+  let seed = 0xdeadbeef >>> 0;
+  const rand = () => {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    return (((seed >>> 8) & 0x00FFFFFF) / 8388608) - 1;
+  };
+
+  const fStart = 78 + impact * 12;
+  const fEnd = 32 + motion * 26;
+  const tailTau = 0.7 + air * 0.55;
+  const satAmt = 2.66 * drive;
+  // gains carry rms-normalization makeup for each noise chain
+  const thumpG = 1.5 * impact * 25.6;
+  const clickG = (0.2 + metal * 0.3) * 3.25;
+
+  const aThumpLp = 1 - Math.exp(-2 * Math.PI * 450 / sr);
+  const aThumpHp = Math.exp(-2 * Math.PI * 110 / sr);
+  const aClickLp = 1 - Math.exp(-2 * Math.PI * 9000 / sr);
+  const aClickHp = Math.exp(-2 * Math.PI * 2500 / sr);
+
+  let tl1 = 0, tl2 = 0, tl3 = 0, tl4 = 0, thpY = 0, thpX = 0;
+  let cl = 0, chpY = 0, chpX = 0;
+  let phase = 0;
+
+  for (let i = 0; i < n; i++) {
+    const t = i / sr;
+    const white = rand();
+
+    // sub glide
+    const f0 = fEnd + (fStart - fEnd) * Math.exp(-t / 0.35);
+    phase += f0 / sr;
+    if (phase >= 1) phase -= 1;
+    const env = Math.min(1, t / 0.12) * Math.exp(-Math.max(0, t - 0.15) / tailTau);
+    const sat = 1 + satAmt * Math.exp(-t / 0.05);
+    const sub = Math.tanh(Math.sin(2 * Math.PI * phase) * sat) / Math.tanh(sat) * env * 1.05;
+
+    // onset thump 110-450Hz (4x LP + HP)
+    tl1 += (white - tl1) * aThumpLp;
+    tl2 += (tl1 - tl2) * aThumpLp;
+    tl3 += (tl2 - tl3) * aThumpLp;
+    tl4 += (tl3 - tl4) * aThumpLp;
+    const thp = aThumpHp * (thpY + tl4 - thpX);
+    thpX = tl4; thpY = thp;
+    const thump = thp * thumpG * Math.exp(-t / 0.050);
+
+    // onset hi click 2500-9000Hz
+    cl += (white - cl) * aClickLp;
+    const chp = aClickHp * (chpY + cl - chpX);
+    chpX = cl; chpY = chp;
+    const click = chp * clickG * Math.exp(-t / 0.010);
+
+    let y = Math.tanh(sub + thump + click) * 0.93;
+    if (t > durS - 0.25) y *= Math.max(0, (durS - t) / 0.25);
+    out[i] = Math.max(-1, Math.min(1, y));
+  }
+
+  const ctx = getOldAudioCtx();
+  const buf = ctx.createBuffer(1, n, sr);
+  buf.copyToChannel(out, 0);
+  return buf;
+}
+
+function updateLayerDisplay() {
+  const p = Presets[currentPresetName];
+  const chips = document.getElementById('layer-chips');
+  if (!chips || !p || !p.layers) return;
+  chips.innerHTML = p.layers.map(l =>
+    `<span class="layer-chip on">◎ ${l.engine} <span style="opacity:.55">×${l.gain.toFixed(1)}</span></span>`
+  ).join('');
+}
+
+document.getElementById('btn-trigger').addEventListener('click', async () => {
+  const p = Presets[currentPresetName];
+  const layers = p && p.layers ? p.layers : [];
+
+  const wkLayers  = layers.filter(l => l.engine === 'KINETIC' || l.engine === 'HYBRID');
+  const bufLayers = layers.filter(l => l.engine === 'INTERFACE' || l.engine === 'IMPACT' || l.engine === 'BOOM');
+
+  if (wkLayers.length) {
+    await ensureAudio();
+    sendParams();
+    for (const l of wkLayers) {
+      if (l.engine === 'KINETIC') {
+        nodeWeenGain.gain.value = l.gain;
+        nodeWeen.port.postMessage({ type: 'trigger' });
+      } else if (l.engine === 'HYBRID') {
+        nodeHybridGain.gain.value = l.gain;
+        nodeHybrid.port.postMessage({ type: 'trigger' });
+      }
+    }
+  }
+
+  if (bufLayers.length) {
+    const ctx = getOldAudioCtx();
+    if (ctx.state === 'suspended') await ctx.resume();
+    const bufs = await Promise.all(bufLayers.map(async l => {
+      let buf;
+      if (l.engine === 'INTERFACE')    buf = await renderEnigmaProcedural();
+      else if (l.engine === 'IMPACT')  buf = await renderImpactCoreProcedural();
+      else if (l.engine === 'BOOM')    buf = await renderLongBoomProcedural();
+      return { buf, gain: l.gain };
+    }));
+    const now = ctx.currentTime;
+    for (const { buf, gain } of bufs) {
+      const src = ctx.createBufferSource();
+      const lg  = ctx.createGain();
+      lg.gain.value = gain;
+      src.buffer = buf;
+      src.connect(lg);
+      lg.connect(ctx.destination);
+      src.start(now);
+    }
+  }
+
+  const meters = document.querySelectorAll('.meter-fill');
+  meters.forEach(m => m.style.width = '100%');
+  setTimeout(() => meters.forEach(m => m.style.width = '70%'), 150);
+});
+
+function updateSeedUI() {
+  const el = document.getElementById('seed-display');
+  if (el) el.textContent = renderSeed !== null
+    ? '#' + renderSeed.toString(16).toUpperCase().padStart(6, '0')
+    : 'FREE';
+  document.getElementById('btn-free').classList.toggle('active', renderSeed === null);
+  document.getElementById('btn-lock').classList.toggle('active', renderSeed !== null);
+  document.getElementById('btn-roll').classList.toggle('active', false);
+}
+
+document.getElementById('btn-free').addEventListener('click', () => {
+  renderSeed = null;
+  updateSeedUI();
+});
+
+document.getElementById('btn-roll').addEventListener('click', () => {
+  renderSeed = Math.random() * 0xFFFFFF | 0;
+  updateSeedUI();
+  document.getElementById('btn-trigger').click();
+});
+
+document.getElementById('btn-lock').addEventListener('click', () => {
+  if (lastUsedSeed !== null) {
+    renderSeed = lastUsedSeed;
+    updateSeedUI();
+  }
+});
+
+updateSeedUI();
+updateLayerDisplay();
+
+</script>
+</body>
+</html>
