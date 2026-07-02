@@ -1238,6 +1238,7 @@ if (exportButton) {
 document.getElementById('btn-trigger').addEventListener('click', async () => {
   const p = Presets[currentPresetName];
   const layers = p && p.layers ? p.layers : [];
+  const exportLayers = [];
 
   const wkLayers  = layers.filter(l => l.engine === 'KINETIC' || l.engine === 'HYBRID');
   const bufLayers = layers.filter(l => l.engine === 'INTERFACE' || l.engine === 'IMPACT' || l.engine === 'BOOM');
@@ -1253,6 +1254,7 @@ document.getElementById('btn-trigger').addEventListener('click', async () => {
         nodeHybridGain.gain.value = l.gain;
         nodeHybrid.port.postMessage({ type: 'trigger' });
       }
+      exportLayers.push({ buf: await renderLayerForExport(l.engine), gain: l.gain });
     }
   }
 
@@ -1264,15 +1266,9 @@ document.getElementById('btn-trigger').addEventListener('click', async () => {
       if (l.engine === 'INTERFACE')    buf = await renderEnigmaProcedural();
       else if (l.engine === 'IMPACT')  buf = await renderImpactCoreProcedural();
       else if (l.engine === 'BOOM')    buf = await renderLongBoomProcedural();
-      return { buf, gain: l.gain };
+      return { buf, gain: l.gain, engine: l.engine };
     }));
-    lastInjectExportBuffer = mixRenderedBuffers(bufs);
-    lastInjectExportMeta = {
-      preset: currentPresetName,
-      layers: bufLayers.map(l => l.engine).join('+'),
-      seed: lastUsedSeed,
-      source: 'inject-buffer-layers',
-    };
+    exportLayers.push(...bufs);
     const now = ctx.currentTime;
     for (const { buf, gain } of bufs) {
       const src = ctx.createBufferSource();
@@ -1283,6 +1279,16 @@ document.getElementById('btn-trigger').addEventListener('click', async () => {
       lg.connect(ctx.destination);
       src.start(now);
     }
+  }
+
+  if (exportLayers.length) {
+    lastInjectExportBuffer = mixRenderedBuffers(exportLayers);
+    lastInjectExportMeta = {
+      preset: currentPresetName,
+      layers: layers.map(l => l.engine).join('+'),
+      seed: lastUsedSeed,
+      source: wkLayers.length ? 'inject-all-layers-experimental' : 'inject-buffer-layers',
+    };
   }
 
   const meters = document.querySelectorAll('.meter-fill');
