@@ -18,7 +18,7 @@ https://dim.productions/linkindaw-axion-probe/
 Current verified Worker version:
 
 ```text
-34209dac-1f4b-4c8e-8cbd-a4289e4ee4e2
+a8cf738d-ef2f-4074-a968-4fc246fd0d50
 ```
 
 Do not deploy this Worker to `dim.productions/axion/*` until explicitly approved.
@@ -37,7 +37,7 @@ node tools\webrtc-poc\webapp-adapter-integration-poc.mjs
 
 Verified:
 
-- Root URL returns `AXION PROTOTYPE`
+- Root URL returns `Axion`
 - Query parameters are preserved
 - `?linkindaw=webrtc&room=<roomId>` starts the adapter
 - Cloud signaling succeeds through `https://dim.productions/linkindaw-signal`

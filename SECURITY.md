@@ -9,7 +9,7 @@ Current supported test environment:
 - Windows
 - FL Studio
 - LinkinDAW VST3
-- Chrome with the Axion staging route
+- Chrome with the LinkinDAW launcher and Axion staging route
 
 No production-grade security support, installer signing, payment/auth system, or binary release channel is active yet.
 
@@ -30,6 +30,8 @@ The Cloudflare signaling Worker is intended to relay WebRTC setup messages only:
 It should not carry MIDI, audio, Axion state JSON, VST3 parameter changes, auth/payment data, or private project data.
 
 Runtime DAW/WebApp data should travel over the WebRTC DataChannel after peer connection establishment.
+
+Current Public Alpha signaling uses a temporary Cloudflare Cache API fallback after Durable Objects hit free-tier request limits. This signaling route is for short-lived pairing messages only and should not be treated as authentication or persistent project storage.
 
 ## Known Public Alpha Limitations
 

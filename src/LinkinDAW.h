@@ -60,9 +60,6 @@ public:
   std::string GetWebSocketAddress() const;
   std::string GetWebRtcAddress() const;
   std::string GetWebRtcRoomId() const;
-  void ToggleTargetApp();
-  std::string GetTargetAppId() const;
-  std::string GetTargetAppLabel() const;
   void OpenWebApp();
   void ReconnectWebSocket();
   void HandleWebTextMessage(const std::string& payload);
@@ -88,7 +85,6 @@ private:
   std::string mLastParamLabel = "Idle";
   uint16_t mWebSocketPort = 0;
   std::string mWebRtcRoomId;
-  bool mUseEnigmaApp = false;
   uint64_t mLastTransportSentMs = 0;
   double mLastTransportBpm = -1.0;
   double mLastTransportPpq = -1.0;

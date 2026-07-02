@@ -2,7 +2,7 @@
 
 LinkinDAW is a Windows-first VST3 connector between DAWs and compatible Web Audio applications.
 
-Current status: Developer Preview / Public Alpha. The current reference integration is Axion staging at `https://dim.productions/linkindaw-axion-probe/`.
+Current status: Developer Preview / Public Alpha. The current reference integration is Axion staging at `https://dim.productions/linkindaw-axion-probe/`, opened through `https://dim.productions/linkindaw-launch/`.
 
 ## Core Roles
 
@@ -11,7 +11,7 @@ FL Studio
 -> LinkinDAW VST3
 -> local native bridge inside the plug-in process
 -> WebRTC DataChannel
--> Axion WebApp staging route
+-> selected WebApp from the LinkinDAW Launcher
 ```
 
 LinkinDAW is not a full DAW remote-control layer. It does not control FL Studio transport buttons, mixer, playlist, channel rack, or host-specific UI.
@@ -27,6 +27,18 @@ Axion UI parameter
 
 ## Current Transport Paths
 
+### Cloud Launcher / WebRTC Path
+
+```text
+https://dim.productions/linkindaw-launch/
+-> https://dim.productions/linkindaw-axion-probe/ or https://dim.productions/linkindaw-enigma-probe/
+-> https://dim.productions/linkindaw-signal
+-> WebRTC DataChannel
+-> LinkinDAW native peer
+```
+
+This is the current Public Alpha direction.
+
 ### Development / Local Fallback
 
 ```text
@@ -36,15 +48,6 @@ ws://127.0.0.1:8080-8099
 ```
 
 This path is for local development and bundled-local fallback testing.
-
-### Cloud Staging Path
-
-```text
-https://dim.productions/linkindaw-axion-probe/
--> https://dim.productions/linkindaw-signal
--> WebRTC DataChannel
--> LinkinDAW native peer
-```
 
 Cloud HTTPS plus plain `ws://127.0.0.1` is not the production direction. That route failed browser testing and should not be revived unless explicitly requested.
 
@@ -65,6 +68,8 @@ It must not carry:
 - auth/payment data
 
 Runtime DAW/WebApp data travels through the WebRTC DataChannel after peer connection establishment.
+
+Current production signaling uses a temporary Cloudflare Cache API fallback because Durable Objects hit free-tier request limits during Public Alpha testing. This is not the final production signaling design.
 
 ## Runtime Messages
 

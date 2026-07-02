@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AXION PROTOTYPE</title>
+  <meta name="application-name" content="Axion" />
+  <title>Axion</title>
   <link rel="icon" href="./assets/favicon.svg" />
-  <link rel="stylesheet" href="./src/styles/axion.css?v=axion-pages-128-keytags-20260522" />
+  <link rel="stylesheet" href="./src/styles/axion.css?v=linkindaw-public-alpha-dimp-link-2-20260629" />
 </head>
 <body>
 <div class="audio-arm-overlay" id="audioArmOverlay">
@@ -19,13 +20,10 @@
         <div class="brand-stack">
           <div class="brand" style="display: flex; align-items: center; gap: 22px;">
             <img src="./assets/axion.webp" alt="AXION" style="height: 80px;">
-            <div class="top-controls">
-              <a href='https://ko-fi.com/dimproductions' target='_blank'><img height='50' style='border:0px;height: 50px;' src='./assets/kofi_symbol.svg' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
-            </div>
           </div>
           <div class="subtitle">Fully Synthesized Percussion Engine</div>
         </div>      </div>
-      <div class="transport"><button class="btn" id="playBtn">PLAY</button><button class="btn" id="stopBtn">STOP</button><button class="btn" id="recBtn">REC</button><button class="btn" id="exportBtn">EXP</button><button class="btn" id="importBtn">IMP</button><button class="btn" id="export808MidiBtn" title="Export 808 MIDI">808 MIDI</button><button class="btn" id="export808StemBtn" title="Export 808 WAV stem">808 WAV</button><button class="btn" id="howToBtn" aria-expanded="false" aria-controls="howToPanel">?</button></div>
+      <div class="transport"><button class="btn" id="playBtn">PLAY</button><button class="btn" id="stopBtn">STOP</button><button class="btn" id="recBtn">REC</button><button class="btn" id="exportBtn">EXP</button><button class="btn" id="importBtn">IMP</button><button class="btn" id="export808StemBtn" title="Export 808 WAV stem">808 WAV</button><button class="btn" id="howToBtn" aria-expanded="false" aria-controls="howToPanel">?</button></div>
       <div class="bpm-inline"><span>BPM</span><strong id="bpmReadout">100.00</strong></div>
       <div class="pages" id="pageButtons" style="position: relative; z-index: 10;"></div>
       <div class="division-stack" id="beatDivisionButtons">
@@ -45,7 +43,7 @@
       </div>
     </div>
     <div class="dimp-logo-block recess">
-      <img class="dimp-logo" src="./assets/dimp-logo.webp" alt="DIMP" />
+      <a class="dimp-logo-link" href="https://dim.productions/" target="_blank" rel="noopener noreferrer"><img class="dimp-logo" src="./assets/dimp-logo.webp" alt="DIMP Productions" /></a>
     </div>
   </header>
   <div id="howToPanel" class="howto-panel hidden" role="note" aria-label="AXION how to">

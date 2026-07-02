@@ -86,9 +86,7 @@ public:
     mLastMouseX = x;
     mLastMouseY = y;
 
-    if (mTargetAppRow.Contains(x, y)) {
-      mPlugin.ToggleTargetApp();
-    } else if (mOpenButton.Contains(x, y)) {
+    if (mOpenButton.Contains(x, y)) {
       mPlugin.OpenWebApp();
     } else if (mReconnectButton.Contains(x, y)) {
       mPlugin.ReconnectWebSocket();
@@ -149,10 +147,6 @@ private:
     y += 20.f;
     const std::string webAppName = mPlugin.GetWebAppName();
     DrawRow(g, "Connected App", webAppName.c_str(), y, UiTheme::Text, false);
-    y += UiTheme::RowH + UiTheme::Gap;
-    const std::string targetApp = mPlugin.GetTargetAppLabel();
-    mTargetAppRow = IRECT(mPanel.L + UiTheme::Pad, y, mPanel.R - UiTheme::Pad, y + UiTheme::RowH);
-    DrawRow(g, "Target App", targetApp.c_str(), y, UiTheme::Green, true);
     y += UiTheme::RowH + UiTheme::Gap;
     const std::string address = mPlugin.GetWebRtcAddress();
     DrawRow(g, "Address", address.c_str(), y, UiTheme::Text, false);
@@ -225,7 +219,6 @@ private:
   LinkinDAW& mPlugin;
   UiTextSet mText;
   IRECT mPanel;
-  IRECT mTargetAppRow;
   IRECT mOpenButton;
   IRECT mReconnectButton;
   float mLastMouseX = -1.f;
@@ -249,7 +242,7 @@ const char* ParamDisplayName(int paramIdx)
 }
 
 constexpr uint16_t kStaticWebPort = 18080;
-constexpr const char* kCloudAxionProbeUrl = "https://dim.productions/linkindaw-axion-probe/";
+constexpr const char* kCloudWebAppProbeUrl = "https://dim.productions/linkindaw-launch/";
 constexpr const char* kCloudSignalingUrl = "https://dim.productions/linkindaw-signal";
 std::mutex gStaticFileServerMutex;
 std::unique_ptr<StaticFileServer> gStaticFileServer;
@@ -714,25 +707,6 @@ std::string LinkinDAW::GetWebRtcRoomId() const
   return mWebRtcRoomId;
 }
 
-void LinkinDAW::ToggleTargetApp()
-{
-  std::lock_guard<std::mutex> lock(mStateMutex);
-  mUseEnigmaApp = !mUseEnigmaApp;
-  mWebAppName = mUseEnigmaApp ? "ENIGMA" : "Axion";
-}
-
-std::string LinkinDAW::GetTargetAppId() const
-{
-  std::lock_guard<std::mutex> lock(mStateMutex);
-  return mUseEnigmaApp ? "enigma" : "axion";
-}
-
-std::string LinkinDAW::GetTargetAppLabel() const
-{
-  std::lock_guard<std::mutex> lock(mStateMutex);
-  return mUseEnigmaApp ? "ENIGMA" : "Axion";
-}
-
 bool LinkinDAW::StartWebSocketServer()
 {
   constexpr uint16_t kFirstPort = 8080;
@@ -795,7 +769,7 @@ void LinkinDAW::OpenWebApp()
 
   const std::string roomId = GetWebRtcRoomId();
   char url[512];
-  std::snprintf(url, sizeof(url), "%s?linkindaw=webrtc&room=%s", kCloudAxionProbeUrl, roomId.c_str());
+  std::snprintf(url, sizeof(url), "%s?linkindaw=webrtc&room=%s", kCloudWebAppProbeUrl, roomId.c_str());
   if (!LaunchChromeUrl(url)) {
     ShellExecuteA(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL);
   }
@@ -823,7 +797,7 @@ void LinkinDAW::ReconnectWebSocket()
 
   const std::string roomId = GetWebRtcRoomId();
   char url[512];
-  std::snprintf(url, sizeof(url), "%s?linkindaw=webrtc&room=%s", kCloudAxionProbeUrl, roomId.c_str());
+  std::snprintf(url, sizeof(url), "%s?linkindaw=webrtc&room=%s", kCloudWebAppProbeUrl, roomId.c_str());
   if (!LaunchChromeUrl(url)) {
     ShellExecuteA(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL);
   }
@@ -866,7 +840,16 @@ void LinkinDAW::HandleWebTextMessage(const std::string& payload)
       } else if (command == "app_title") {
         SetWebAppName(j.value("value", "Unknown"));
       } else if (command == "webapp_ready") {
-        SetWebAppName("Axion");
+        std::string appName = "Unknown WebApp";
+        if (j.contains("value")) {
+          const json& value = j["value"];
+          if (value.is_object() && value.contains("app") && value["app"].is_string()) {
+            appName = value["app"].get<std::string>();
+          } else if (value.is_string()) {
+            appName = value.get<std::string>();
+          }
+        }
+        SetWebAppName(appName);
       } else if ((command == "save_axion_state" || command == "axion_state") && j.contains("value")) {
         const json& value = j["value"];
         if (value.is_string()) SetAxionStateJson(value.get<std::string>());

@@ -1,6 +1,6 @@
 # LinkinDAW Cloudflare Signaling PoC
 
-Minimal HTTPS signaling endpoint for the WebRTC DataChannel PoC.
+Minimal HTTPS signaling endpoint for LinkinDAW WebRTC DataChannel pairing.
 
 It only relays WebRTC setup messages:
 
@@ -8,7 +8,7 @@ It only relays WebRTC setup messages:
 - `answer`
 - `candidate`
 
-It must not carry MIDI, audio, Axion state, auth, payment, or installer logic.
+It must not carry MIDI, audio, Axion state, auth, payment, installer logic, or private project data.
 
 ## Endpoints
 
@@ -40,6 +40,30 @@ Candidate shape:
 }
 ```
 
+## Current Production Status
+
+Route:
+
+```text
+https://dim.productions/linkindaw-signal
+```
+
+Current deployed Worker version:
+
+```text
+17c54c3d-d8fb-496e-948d-2babb9d165dd
+```
+
+Current storage mode:
+
+```text
+cache-api-fallback
+```
+
+Durable Objects signaling hit Cloudflare free-tier request limits during Public Alpha testing. The current production deployment therefore uses a temporary Cloudflare Cache API fallback for room messages.
+
+This is acceptable for short-lived Public Alpha signaling tests, but it is not the final production signaling design.
+
 ## Deploy
 
 From this directory:
@@ -48,36 +72,24 @@ From this directory:
 npx wrangler deploy
 ```
 
-Then point the PoC runner at the deployed HTTPS endpoint:
+Then verify the deployed HTTPS endpoint:
 
 ```powershell
-$env:LINKINDAW_SIGNALING_BASE = "https://dim.productions/linkindaw-signal"
-node ..\cloud-signaling-poc.mjs
+$body = @{ from='browser'; to='native'; kind='offer'; sdp='test-sdp' } | ConvertTo-Json -Compress
+Invoke-RestMethod -Uri 'https://dim.productions/linkindaw-signal/rooms/test-room/messages' -Method Post -ContentType 'application/json' -Body $body
+Invoke-RestMethod -Uri 'https://dim.productions/linkindaw-signal/rooms/test-room/messages?to=native&after=0'
 ```
 
-For the product route, bind it under dim.productions, for example:
+Expected response metadata includes:
 
-```text
-https://dim.productions/linkindaw-signal
-```
-
-Then test:
-
-```powershell
-$env:LINKINDAW_SIGNALING_BASE = "https://dim.productions/linkindaw-signal"
-node tools\webrtc-poc\cloud-signaling-poc.mjs
+```json
+{
+  "storage": "cache-api-fallback"
+}
 ```
 
 ## Notes
 
-- Uses a Durable Object per `roomId`.
 - Messages expire after roughly two minutes.
-- This is still a PoC, not LinkinDAW VST3 integration.
-
-
-## Current deployed route
-
-- Route: https://dim.productions/linkindaw-signal 
-- Worker version verified: 7ba1d03b-5b4e-4d47-a881-801002855d44 
-- Verified with https://dim.productions/axion/ and the local C++ libdatachannel peer. 
-
+- Room IDs are pairing tokens, not authentication.
+- This Worker is only the WebRTC setup relay. Runtime DAW/WebApp data travels over the WebRTC DataChannel.

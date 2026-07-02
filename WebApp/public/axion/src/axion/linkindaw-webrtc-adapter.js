@@ -12,6 +12,17 @@ let closedByAdapter = false;
 let reconnectTimer = null;
 let connectAttempt = 0;
 const STATE_TRACK_IDS = new Set(['kick', 'snare', 'hat', 'bass808']);
+function detectWebAppName() {
+  const queryName = params.get('appName') || params.get('webapp') || params.get('app');
+  if (queryName?.trim()) return queryName.trim();
+
+  const metaName = document.querySelector('meta[name="application-name"]')?.getAttribute('content')
+    || document.querySelector('meta[property="og:site_name"]')?.getAttribute('content');
+  if (metaName?.trim()) return metaName.trim();
+
+  const title = document.title?.trim();
+  return title || 'Unknown WebApp';
+}
 
 function log(...args) {
   console.info('[LinkinDAW WebRTC]', ...args);
@@ -153,7 +164,9 @@ async function connect() {
 
   channel.onopen = () => {
     log('DataChannel open', { roomId, signalingBase });
-    sendJson({ type: 'system', command: 'webapp_ready', value: { app: 'Axion', href: window.location.href } });
+    const app = detectWebAppName();
+    sendJson({ type: 'system', command: 'webapp_ready', value: { app, title: document.title, href: window.location.href } });
+    sendJson({ type: 'system', command: 'app_title', value: app });
   };
 
   channel.onmessage = (event) => {
