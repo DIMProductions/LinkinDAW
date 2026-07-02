@@ -232,6 +232,11 @@
     max-width: 250px;
     justify-self: end;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1;
   }
   .action-stack { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; justify-self: end; width: min(250px, 100%); }
   .action-stack .pulse-btn { max-width: none; }
@@ -441,6 +446,8 @@ const Presets = {
 };
 
 let currentPresetName = 'AUTH_LOCK';
+let lastInjectExportBuffer = null;
+let lastInjectExportMeta = null;
 
 // Knob rotation mapped from -135 to +135 degrees (270 degree span)
 function renderKnobVisual(id, value) {
@@ -467,6 +474,8 @@ function attachKnobDrag(id) {
 
   const updateVal = (newVal) => {
     EngineState[id] = Math.max(0, Math.min(1, newVal));
+    lastInjectExportBuffer = null;
+    lastInjectExportMeta = null;
     renderKnobVisual(id, EngineState[id]);
     const p = Presets[currentPresetName];
     if (p && (p.engineType === 'MOTION' || p.engineType === 'MIXED') && typeof sendParams === 'function') sendParams();
@@ -507,6 +516,8 @@ document.querySelectorAll('.tab').forEach(tab => {
     const presetName = tab.getAttribute('data-preset');
     if (Presets[presetName]) {
       currentPresetName = presetName;
+      lastInjectExportBuffer = null;
+      lastInjectExportMeta = null;
       Object.assign(EngineState, Presets[presetName]);
       updateAllKnobs();
       updateLayerDisplay();
@@ -1125,6 +1136,10 @@ function mixRenderedBuffers(items) {
 }
 
 async function renderCurrentPresetForExport() {
+  if (lastInjectExportBuffer && lastInjectExportMeta?.preset === currentPresetName) {
+    return lastInjectExportBuffer;
+  }
+
   const p = Presets[currentPresetName];
   const layers = p && p.layers ? p.layers : [];
   const rendered = await Promise.all(layers.map(async l => ({
@@ -1187,7 +1202,11 @@ function downloadBlob(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-window.__enigmaExportApi = { renderCurrentPresetForExport, audioBufferToWavBlob };
+window.__enigmaExportApi = {
+  renderCurrentPresetForExport,
+  audioBufferToWavBlob,
+  getLastInject: () => lastInjectExportMeta,
+};
 window.__enigmaLastExport = { status: 'idle' };
 
 const exportButton = document.getElementById('btn-export-wav');
@@ -1247,6 +1266,13 @@ document.getElementById('btn-trigger').addEventListener('click', async () => {
       else if (l.engine === 'BOOM')    buf = await renderLongBoomProcedural();
       return { buf, gain: l.gain };
     }));
+    lastInjectExportBuffer = mixRenderedBuffers(bufs);
+    lastInjectExportMeta = {
+      preset: currentPresetName,
+      layers: bufLayers.map(l => l.engine).join('+'),
+      seed: lastUsedSeed,
+      source: 'inject-buffer-layers',
+    };
     const now = ctx.currentTime;
     for (const { buf, gain } of bufs) {
       const src = ctx.createBufferSource();
