@@ -1,24 +1,27 @@
-# Axion Adapter Worker Staging
+# LinkinDAW WebApp Probe Worker
 
-Staging-only Worker for serving Adapter-enabled Axion without touching production `/axion/*`.
+Staging-only Worker for serving LinkinDAW WebApp probes without touching production `/axion/*`.
 
-Current route:
+Current routes:
 
 ```text
 dim.productions/linkindaw-axion-probe
 dim.productions/linkindaw-axion-probe/*
+dim.productions/linkindaw-enigma-probe
+dim.productions/linkindaw-enigma-probe/*
 ```
 
-Verified staging URL:
+Verified staging URLs:
 
 ```text
 https://dim.productions/linkindaw-axion-probe/
+https://dim.productions/linkindaw-enigma-probe/
 ```
 
 Current verified Worker version:
 
 ```text
-a8cf738d-ef2f-4074-a968-4fc246fd0d50
+0a154427-b99d-4f14-9c24-b0822033eb2c
 ```
 
 Do not deploy this Worker to `dim.productions/axion/*` until explicitly approved.
@@ -33,16 +36,21 @@ node tools\webrtc-poc\webapp-adapter-integration-poc.mjs
 
 ## Frozen staging status
 
-`https://dim.productions/linkindaw-axion-probe/` now serves Adapter-enabled Axion directly.
+`https://dim.productions/linkindaw-axion-probe/` serves Adapter-enabled Axion directly.
 
-Verified:
+Axion verified:
 
-- Root URL returns `Axion`
-- Query parameters are preserved
-- `?linkindaw=webrtc&room=<roomId>` starts the adapter
-- Cloud signaling succeeds through `https://dim.productions/linkindaw-signal`
-- RTCDataChannel opens with the local C++ bridge probe
-- DAW-style JSON is acknowledged by the WebApp
+- Root URL returns `Axion`.
+- Query parameters are preserved.
+- `?linkindaw=webrtc&room=<roomId>` starts the adapter.
+- Cloud signaling succeeds through `https://dim.productions/linkindaw-signal`.
+- RTCDataChannel opens with the local C++ bridge probe.
+- DAW-style JSON is acknowledged by the WebApp.
 
-Keep this route as the official experiment URL until production `/axion/*` is explicitly approved.
+ENIGMA display/probe verification:
 
+- Root URL returns `ENIGMA Engine - Metallic`.
+- `?linkindaw=webrtc&room=<roomId>` still returns ENIGMA HTML.
+- This route is deployed for display/probe testing and is not FL verified.
+
+Keep these routes as staging experiment URLs until production `/axion/*` is explicitly approved.
