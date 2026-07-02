@@ -17,17 +17,19 @@
     --text-small: #8a8d91; --text-num: #f7faf8; --text-label: #b6b8bc;
     --meter-track: #070808; --meter-fill: #028ec1;
   }
-  
+
   * { box-sizing: border-box; user-select: none; }
-  
+
   body {
-    margin: 0; padding: 40px;
+    margin: 0;
+    padding: clamp(10px, 1.8vw, 20px);
     background: radial-gradient(circle at 50% 22%, rgba(2,142,193,.16), transparent 32%),
                 radial-gradient(circle at 50% 50%, rgba(2,142,193,.07), transparent 58%), #000;
     color: #f2f3f4;
     font-family: 'Inter', system-ui, sans-serif;
     display: flex; justify-content: center; align-items: center;
     min-height: 100vh;
+    overflow-x: hidden;
   }
 
   .plate-tile {
@@ -42,13 +44,14 @@
   }
 
   .chassis {
-    width: 1400px;
-    height: 900px;
+    width: min(1400px, calc(100vw - clamp(20px, 4.2vw, 56px)));
+    min-height: min(900px, calc(100vh - clamp(20px, 4.2vw, 56px)));
+    height: auto;
     border-radius: 34px;
-    padding: 26px 40px;
+    padding: clamp(18px, 2vw, 26px) clamp(20px, 2.8vw, 40px);
     display: flex;
     flex-direction: column;
-    gap: 32px;
+    gap: clamp(14px, 2vw, 24px);
     box-shadow: 0 40px 100px rgba(0,0,0,0.8);
   }
 
@@ -64,10 +67,11 @@
   }
 
   .header {
-    padding: 20px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: clamp(16px, 1.8vw, 22px) clamp(18px, 2.2vw, 30px);
+    display: grid;
+    grid-template-columns: minmax(150px, 260px) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
     z-index: 1;
   }
 
@@ -75,53 +79,64 @@
   .title { font-size: 28px; font-weight: 800; color: var(--text-title); letter-spacing: 3px; }
   .sub { font-size: 12px; color: var(--text-sub); letter-spacing: 1.5px; }
 
-  .tabs { display: flex; gap: 8px; }
+  .tabs { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; min-width: 0; }
   .tab {
     background: var(--cab-1);
     border: 1px solid var(--steel-6);
     border-radius: 10px;
-    padding: 12px 24px;
-    font-size: 13px; font-weight: 700;
+    padding: 11px clamp(12px, 1.4vw, 20px);
+    font-size: clamp(10px, .82vw, 13px); font-weight: 700;
     color: var(--text-tab); letter-spacing: 1.2px;
     cursor: pointer; transition: all 0.2s;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
-  .tab.active { 
-    background: var(--cab-0); 
-    border-color: var(--cyan); 
-    color: #fff; 
-    box-shadow: 0 0 15px var(--cyan-soft), inset 0 0 0 1px var(--cyan); 
+  .tab.active {
+    background: var(--cab-0);
+    border-color: var(--cyan);
+    color: #fff;
+    box-shadow: 0 0 15px var(--cyan-soft), inset 0 0 0 1px var(--cyan);
   }
 
   .modules-row {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(190px, 1.08fr) minmax(180px, 1fr) minmax(180px, 1fr) minmax(180px, 1fr) minmax(120px, .58fr);
+    gap: clamp(14px, 3.6vw, 54px);
     z-index: 1;
-    height: 250px;
+    min-height: 230px;
   }
 
   .module {
     border-radius: 18px;
-    padding: 20px;
+    padding: clamp(16px, 1.6vw, 20px);
     display: flex;
     flex-direction: column;
     position: relative;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    min-width: 0;
+    min-height: 230px;
   }
-  .module.w240 { width: 240px; }
-  .module.w120 { width: 140px; }
+  .module.w240,
+  .module.w120 { width: auto; }
 
-  .mod-title { font-size: 13px; font-weight: 800; color: var(--text-mod); letter-spacing: 1.4px; }
-  .mod-sub { font-size: 10px; color: var(--text-small); letter-spacing: 0.8px; margin-top: 4px; margin-bottom: 15px; }
-  
-  .label { font-size: 10px; font-weight: 700; color: var(--text-label); letter-spacing: 1px; }
+  .mod-title { font-size: 13px; font-weight: 800; color: rgba(23,26,30,.72); letter-spacing: 1.4px; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
+  .mod-sub { font-size: 10px; color: rgba(35,39,44,.56); letter-spacing: 0.8px; margin-top: 4px; margin-bottom: 15px; text-shadow: 0 1px 0 rgba(255,255,255,.55); }
+
+  .label { font-size: 10px; font-weight: 700; color: rgba(30,34,38,.64); letter-spacing: 1px; text-shadow: 0 1px 0 rgba(255,255,255,.52); }
   .num { font-family: ui-monospace, monospace; font-size: 20px; font-weight: 800; color: var(--text-num); }
+  .dummy-screen .label { color: var(--text-label); text-shadow: none; }
 
   .slot {
     padding: 10px;
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 12px;
+    gap: 10px;
+    min-width: 0;
   }
+  #active-preset-label { font-size: clamp(13px, 1.25vw, 20px); overflow-wrap: anywhere; text-align: right; }
 
   .meter-box {
     padding: 12px;
@@ -131,9 +146,15 @@
   .meter-row { display: flex; gap: 8px; }
 
   /* Dummy Knobs */
-  .knobs-container { display: flex; justify-content: space-around; flex: 1; align-items: center; }
-  .macro-knobs { display: flex; justify-content: space-around; align-items: center; flex: 1; margin-top: 10px; }
-  
+  .knobs-container { display: flex; justify-content: space-around; flex: 1; align-items: center; gap: 14px; }
+  .macro-knobs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(112px, 1fr)) minmax(210px, .9fr);
+    align-items: center;
+    gap: clamp(14px, 3.2vw, 52px);
+    flex: 1;
+    margin-top: 10px;
+  }
   .knob-wrapper { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 
   .dummy-knob-well {
@@ -143,8 +164,8 @@
     box-shadow: inset 0 1px 1px rgba(255,255,255,.05), inset 0 -2px 4px rgba(0,0,0,.36);
     cursor: pointer;
   }
-  .well-small { width: 66px; height: 66px; }
-  .well-large { width: 90px; height: 90px; padding: 8px; }
+  .well-small { width: clamp(58px, 4.6vw, 66px); height: clamp(58px, 4.6vw, 66px); }
+  .well-large { width: clamp(78px, 6.2vw, 90px); height: clamp(78px, 6.2vw, 90px); padding: 8px; }
 
   .dummy-knob {
     width: 100%; height: 100%;
@@ -171,14 +192,14 @@
 
   .macro-rack {
     border-radius: 20px;
-    height: 280px;
-    padding: 24px;
+    min-height: 236px;
+    padding: clamp(18px, 1.8vw, 24px);
     display: flex; flex-direction: column;
     z-index: 1;
     position: relative;
     box-shadow: 0 20px 50px rgba(0,0,0,0.6);
   }
-  
+
   .var-ctrl { padding: 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
   .var-btn {
     flex: 1; background: var(--cab-2); border: 1px solid var(--steel-6);
@@ -198,7 +219,7 @@
   .layer-chip.on { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 8px var(--cyan-soft); }
 
   .pulse-btn {
-    position: absolute; bottom: 30px; right: 30px;
+    position: static;
     background: var(--cab-1);
     border: 1px solid var(--steel-6);
     color: var(--cyan);
@@ -207,10 +228,38 @@
     cursor: pointer;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
     transition: all 0.1s;
+    width: 100%;
+    max-width: 250px;
+    justify-self: end;
+    white-space: nowrap;
   }
+  .action-stack { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; justify-self: end; width: min(250px, 100%); }
+  .action-stack .pulse-btn { max-width: none; }
+  .export-btn { color: #f2f3f4; border-color: rgba(2,142,193,.65); }
   .pulse-btn:active {
     background: var(--cyan); color: #fff;
     box-shadow: 0 0 20px var(--cyan-soft);
+  }
+
+  @media (max-width: 1180px) {
+    .header { grid-template-columns: 1fr; }
+    .tabs { justify-content: flex-start; }
+    .modules-row { grid-template-columns: repeat(3, minmax(170px, 1fr)); gap: 18px; }
+    .module { min-height: 220px; }
+    .macro-knobs { grid-template-columns: repeat(4, minmax(90px, 1fr)); }
+    .action-stack { grid-column: 1 / -1; width: 100%; flex-direction: row; justify-content: flex-end; }
+    .action-stack .pulse-btn { width: auto; min-width: 210px; }
+  }
+
+  @media (max-width: 760px) {
+    body { align-items: flex-start; overflow-x: auto; }
+    .chassis { width: min(100%, 560px); border-radius: 24px; }
+    .title { font-size: 24px; }
+    .modules-row { grid-template-columns: 1fr; }
+    .module { min-height: 210px; }
+    .macro-knobs { grid-template-columns: repeat(2, minmax(110px, 1fr)); }
+    .action-stack { grid-column: 1 / -1; flex-direction: column; align-items: stretch; }
+    .action-stack .pulse-btn { width: 100%; min-width: 0; }
   }
 </style>
 </head>
@@ -351,8 +400,11 @@
         <div class="dummy-knob-well well-large"><div class="dummy-knob" id="k-m_air"></div></div>
         <span class="label" style="font-size:12px;">AIR</span>
       </div>
-      
-      <button class="pulse-btn" id="btn-trigger">◎ INJECT (SPACE)</button>
+
+      <div class="action-stack">
+        <button class="pulse-btn export-btn" id="btn-export-wav">EXP WAV</button>
+        <button class="pulse-btn" id="btn-trigger">◎ INJECT (SPACE)</button>
+      </div>
     </div>
   </div>
 </div>
@@ -369,7 +421,7 @@ const EngineState = {
   m_impact: 0.8,
   m_metal: 0.6,
   m_air: 0.2,
-  
+
   coherence: 0,
   fatigue: 0
 };
@@ -408,36 +460,36 @@ function updateAllKnobs() {
 function attachKnobDrag(id) {
   const wrap = document.getElementById('wrap-' + id);
   if (!wrap) return;
-  
+
   let isDragging = false;
   let startY = 0;
   let startVal = 0;
-  
+
   const updateVal = (newVal) => {
     EngineState[id] = Math.max(0, Math.min(1, newVal));
     renderKnobVisual(id, EngineState[id]);
     const p = Presets[currentPresetName];
     if (p && (p.engineType === 'MOTION' || p.engineType === 'MIXED') && typeof sendParams === 'function') sendParams();
   };
-  
+
   wrap.addEventListener('mousedown', (e) => {
     isDragging = true;
     startY = e.clientY;
     startVal = EngineState[id];
     document.body.style.cursor = 'ns-resize';
   });
-  
+
   window.addEventListener('mousemove', (e) => {
     if (!isDragging) return;
     const dy = startY - e.clientY;
     updateVal(startVal + dy * 0.005);
   });
-  
+
   window.addEventListener('mouseup', () => {
     isDragging = false;
     document.body.style.cursor = 'default';
   });
-  
+
   renderKnobVisual(id, EngineState[id]);
 }
 
@@ -450,7 +502,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     // Update active class
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
-    
+
     // Get preset name and update state
     const presetName = tab.getAttribute('data-preset');
     if (Presets[presetName]) {
@@ -459,7 +511,7 @@ document.querySelectorAll('.tab').forEach(tab => {
       updateAllKnobs();
       updateLayerDisplay();
       document.getElementById('active-preset-label').innerText = presetName;
-      
+
       // Auto-trigger sound for feedback
       document.getElementById('btn-trigger').click();
     }
@@ -485,13 +537,13 @@ class HybridInterfaceModular extends AudioWorkletProcessor {
     this.rng = 0x87654321 >>> 0;
     this.prevComm = 0;
     this.commLP = 0;
-    
+
     this.paramsState = {
       glideTime: 0.18, startHz: 26, endHz: 118, loadDip: 8, loadTime: 0.29, loadWidth: 0.16,
       commAmount: 0.22, commRate: 3, frictionAmt: 0.24, wobbleDepth: 0, wobbleRate: 2.2,
       resoScale: 1, bodyMix: 0.82, airAmt: 0.12, slideAmt: 0, subAmt: 0.65, metalAmt: 0.6, impactAmt: 0.7, outGain: 0.92
     };
-    
+
     this.port.onmessage = e => {
       const d = e.data || {};
       if (d.type === 'trigger') {
@@ -507,19 +559,19 @@ class HybridInterfaceModular extends AudioWorkletProcessor {
       }
     }
   }
-  
+
   rand() {
     this.rng = (Math.imul(this.rng, 1664525) + 1013904223) >>> 0;
     return (((this.rng >>> 8) & 0x00FFFFFF) / 8388608) - 1;
   }
-  
+
   smoothstep(a, b, x) {
     if (x <= a) return 0;
     if (x >= b) return 1;
     const t = (x - a) / (b - a);
     return t * t * (3 - 2 * t);
   }
-  
+
   rpmCurve(t) {
     const p = this.paramsState;
     const glide = Math.max(0.005, p.glideTime);
@@ -531,11 +583,11 @@ class HybridInterfaceModular extends AudioWorkletProcessor {
     hz -= release * Math.max(0, p.endHz - p.startHz) * 0.18;
     return Math.max(6, hz);
   }
-  
+
   ampEnv(t) {
     return this.smoothstep(0, 0.025, t) * (1 - this.smoothstep(0.92, 1.22, t));
   }
-  
+
   process(inputs, outputs) {
     const out = outputs[0][0], sr = sampleRate;
     for (let i = 0; i < out.length; i++) {
@@ -548,49 +600,49 @@ class HybridInterfaceModular extends AudioWorkletProcessor {
           this.t += 1 / sr;
           continue;
         }
-        
+
         const p = this.paramsState;
         const amp = this.ampEnv(t);
         let rotorHz = this.rpmCurve(t);
-        
+
         const slideProgress = this.smoothstep(0.04, 0.58, t);
         rotorHz *= (1.0 + slideProgress * p.slideAmt * 8.0);
-        
+
         const carrierFreq = 1000 + rotorHz * 20 * p.resoScale * (1 + p.metalAmt * 0.25);
         const subStart = 34 + p.subAmt * 50 + p.impactAmt * 16;
         const subEnd = 22 + p.subAmt * 18;
         const subHz = subStart * Math.pow(Math.max(0.2, subEnd / subStart), slideProgress);
         this.phase808 += subHz / sr;
         if (this.phase808 >= 1) this.phase808 -= 1;
-        
+
         const wobble = Math.sin(2 * Math.PI * p.wobbleRate * t) * p.wobbleDepth;
         const modFreq = 500 + rotorHz * 5 * (1 + wobble) * (1 + p.metalAmt * 0.18);
-        
+
         this.phase += carrierFreq / sr;
         if (this.phase >= 1) this.phase -= 1;
-        
+
         const modPhase = (t * modFreq) % 1;
         const modulator = Math.sin(2 * Math.PI * modPhase);
-        
+
         this.commPhase += (rotorHz * p.commRate) / sr;
         if (this.commPhase >= 1) this.commPhase -= 1;
         const commPulse = Math.exp(-Math.pow((this.commPhase - 0.10) / 0.060, 2));
         const dComm = Math.max(0, commPulse - this.prevComm);
         this.prevComm = commPulse;
         this.commLP = this.commLP * 0.9 + dComm * 0.1;
-        
+
         const glitch = (this.rand() * 2 - 1) * this.commLP * p.commAmount * (3.5 + p.metalAmt * 5.5);
-        
+
         let raw = Math.sin(2 * Math.PI * this.phase + modulator * p.bodyMix * 2 + glitch);
         const subEnv = this.smoothstep(0.0, 0.018, t) * (1 - this.smoothstep(0.46, 1.08, t));
         const sub = Math.sin(2 * Math.PI * this.phase808) * subEnv * p.subAmt * (0.35 + p.slideAmt * 0.55);
-        
+
         const crushFactor = Math.floor(rotorHz * 50);
         if (crushFactor > 0) {
             const crushT = Math.floor(t * crushFactor) / crushFactor;
             raw += Math.sin(2 * Math.PI * (1500 + p.metalAmt * 1800) * crushT) * p.frictionAmt * (0.25 + p.metalAmt * 0.55);
         }
-        
+
         const hit = Math.exp(-Math.pow((t - 0.055) / 0.020, 2)) * p.impactAmt * 0.28;
         raw = raw * amp * 0.62 + sub + hit;
         raw *= p.outGain * (0.72 + p.metalAmt * 0.18);
@@ -639,11 +691,11 @@ async function ensureAudio() {
     const url = URL.createObjectURL(blob);
     await ac.audioWorklet.addModule(url);
     URL.revokeObjectURL(url);
-    
+
     const gain = ac.createGain();
     gain.gain.value = 0.95;
     gain.connect(ac.destination);
-    
+
     nodeWeen = new AudioWorkletNode(ac, 'pure-ween-modular-v2', {
       numberOfOutputs: 1,
       outputChannelCount: [1]
@@ -661,7 +713,7 @@ async function ensureAudio() {
     nodeHybridGain.gain.value = 1.0;
     nodeHybrid.connect(nodeHybridGain);
     nodeHybridGain.connect(gain);
-    
+
     ready = true;
   }
 }
@@ -694,17 +746,17 @@ async function renderEnigmaProcedural() {
   const durS = 0.6;
   const n = Math.floor(sr * durS);
   const out = new Float32Array(n);
-  
+
   const m_motion = EngineState.m_motion;
   const m_impact = EngineState.m_impact;
   const m_metal  = EngineState.m_metal;
   const m_air    = EngineState.m_air;
-  
+
   const throttle = EngineState.throttle;
   const wobble   = EngineState.wobble;
   const drive    = EngineState.drive;
   const gate     = EngineState.gate;
-  
+
   const _seed = renderSeed !== null ? renderSeed : (Math.random() * 0xFFFFFFFF | 0);
   lastUsedSeed = _seed;
   const rng = makeLCG(_seed);
@@ -716,14 +768,14 @@ async function renderEnigmaProcedural() {
     const shock_int = 0.5 + m_impact * 1.5;
     const tunnel_depth = 0.2 + m_motion * 1.2;
     const light_drive = 0.5 + drive * 1.5;
-    
+
     for (let i = 0; i < n; i++) {
       const t = i / sr;
       let val = 0.0;
-      
+
       const body_env = t >= 0.280 ? Math.max(0.0, 1.0 - (t - 0.280) / 0.110) : 1.0;
       val += body_amp * Math.sin(2 * Math.PI * body_freq * t) * body_env;
-      
+
       if (t >= 0.045 && t < 0.115) {
         val += (rng() * 2 - 1) * shock_int;
       } else if (t >= 0.115 && t < 0.280) {
@@ -740,13 +792,13 @@ async function renderEnigmaProcedural() {
         const decay = 1.0 - ((t - 0.390) / (0.6 - 0.390));
         val += strand_sig * Math.max(0, decay) * (0.4 + m_air * 0.6);
       }
-      
+
       let global_env = 1.0;
       if (t < 0.01) global_env = t / 0.01;
       else if (t > 0.6 - 0.05) global_env = Math.max(0, (0.6 - t) / 0.05);
-      
+
       if (gate < 1.0 && rng() > gate && t > 0.1) global_env *= 0.1;
-      
+
       val *= global_env;
       val *= 0.35;
       out[i] = Math.max(-1.0, Math.min(1.0, val));
@@ -759,14 +811,14 @@ async function renderEnigmaProcedural() {
     const desc_end = 50 + m_motion * 100;
     const flicker_rate = 10.0 + wobble * 40.0;
     const tail_noise = m_air * 1.5;
-    
+
     for (let i = 0; i < n; i++) {
       const t = i / sr;
       let val = 0.0;
-      
+
       const whine_mod = Math.sin(2 * Math.PI * (10 + wobble*20) * t);
       val += whine_amp * Math.sin(2 * Math.PI * whine_freq * t + whine_mod) * (0.2 + drive*0.5);
-      
+
       if (t < 0.1) {
         if (rng() > (1.0 - gate * 0.5)) val += (rng() * 2 - 1) * glitch_int;
       } else if (t < 0.3) {
@@ -785,11 +837,11 @@ async function renderEnigmaProcedural() {
         const noise = (rng() * 2 - 1) * tail_noise;
         val += (crush_sig + noise) * Math.max(0, decay);
       }
-      
+
       let global_env = 1.0;
       if (t < 0.01) global_env = t / 0.01;
       else if (t > 0.6 - 0.05) global_env = Math.max(0, (0.6 - t) / 0.05);
-      
+
       val *= global_env;
       val *= 0.35;
       out[i] = Math.max(-1.0, Math.min(1.0, val));
@@ -991,6 +1043,177 @@ function updateLayerDisplay() {
   chips.innerHTML = p.layers.map(l =>
     `<span class="layer-chip on">◎ ${l.engine} <span style="opacity:.55">×${l.gain.toFixed(1)}</span></span>`
   ).join('');
+}
+
+async function renderKineticExportProcedural() {
+  const sr = 48000;
+  const durS = 1.22;
+  const n = Math.floor(sr * durS);
+  const out = new Float32Array(n);
+  const rng = makeLCG(renderSeed !== null ? renderSeed : 0x87654321);
+  let phase = 0;
+  let commPhase = 0;
+  let noiseLP = 0;
+  const motion = EngineState.m_motion;
+  const metal = EngineState.m_metal;
+  const air = EngineState.m_air;
+  const wobble = EngineState.wobble;
+  const drive = EngineState.drive;
+
+  for (let i = 0; i < n; i++) {
+    const t = i / sr;
+    const rise = 1 - Math.exp(-t / (0.12 + motion * 0.16));
+    const rpm = 24 + (96 + motion * 42) * rise - Math.exp(-Math.pow((t - 0.32) / 0.16, 2)) * 10;
+    phase = (phase + rpm / sr) % 1;
+    commPhase = (commPhase + rpm * (2.4 + motion * 2.1) / sr) % 1;
+    const rotor = Math.sin(2 * Math.PI * phase) * 0.07 + (phase * 2 - 1) * 0.035;
+    const comm = Math.exp(-Math.pow((commPhase - 0.18) / 0.12, 2)) * 0.08;
+    const white = rng() * 2 - 1;
+    noiseLP += (white - noiseLP) * (0.05 + metal * 0.08);
+    const friction = Math.tanh(noiseLP * (0.45 + metal * 1.35) + comm) * 0.26;
+    const wob = Math.sin(2 * Math.PI * (2.2 + wobble * 6) * t) * wobble * 0.16;
+    const env = Math.min(1, t / 0.025) * Math.max(0, 1 - Math.max(0, t - 0.9) / 0.32);
+    const tail = Math.abs(noiseLP) * air * 0.08 * Math.max(0, (t - 0.52) / 0.7);
+    out[i] = Math.max(-1, Math.min(1, Math.tanh((rotor + friction + wob + tail) * (1.1 + drive)) * env));
+  }
+
+  const ctx = getOldAudioCtx();
+  const buf = ctx.createBuffer(1, n, sr);
+  buf.copyToChannel(out, 0);
+  return buf;
+}
+
+async function renderHybridExportProcedural() {
+  const [a, b] = await Promise.all([renderEnigmaProcedural(), renderImpactCoreProcedural()]);
+  return mixRenderedBuffers([{ buf: a, gain: 0.62 }, { buf: b, gain: 0.72 }]);
+}
+
+async function renderLayerForExport(engine) {
+  if (engine === 'INTERFACE') return renderEnigmaProcedural();
+  if (engine === 'IMPACT') return renderImpactCoreProcedural();
+  if (engine === 'BOOM') return renderLongBoomProcedural();
+  if (engine === 'KINETIC') return renderKineticExportProcedural();
+  if (engine === 'HYBRID') return renderHybridExportProcedural();
+  throw new Error(`Unsupported export layer: ${engine}`);
+}
+
+function mixRenderedBuffers(items) {
+  const valid = items.filter(item => item && item.buf);
+  if (!valid.length) throw new Error('No buffers to export');
+  const sr = valid[0].buf.sampleRate || 48000;
+  const length = valid.reduce((max, item) => Math.max(max, item.buf.length), 0);
+  const out = new Float32Array(length);
+
+  for (const { buf, gain } of valid) {
+    const data = buf.getChannelData(0);
+    const g = Number.isFinite(gain) ? gain : 1;
+    for (let i = 0; i < data.length; i++) {
+      const v = data[i];
+      if (Number.isFinite(v)) out[i] += v * g;
+    }
+  }
+
+  let peak = 0;
+  for (let i = 0; i < out.length; i++) peak = Math.max(peak, Math.abs(out[i]));
+  const trim = peak > 0.98 ? 0.98 / peak : 1;
+  for (let i = 0; i < out.length; i++) out[i] = Math.max(-1, Math.min(1, out[i] * trim));
+
+  const ctx = getOldAudioCtx();
+  const mixed = ctx.createBuffer(1, length, sr);
+  mixed.copyToChannel(out, 0);
+  return mixed;
+}
+
+async function renderCurrentPresetForExport() {
+  const p = Presets[currentPresetName];
+  const layers = p && p.layers ? p.layers : [];
+  const rendered = await Promise.all(layers.map(async l => ({
+    buf: await renderLayerForExport(l.engine),
+    gain: l.gain,
+  })));
+  return mixRenderedBuffers(rendered);
+}
+
+function audioBufferToWavBlob(buffer) {
+  const channels = Math.min(2, Math.max(1, buffer.numberOfChannels));
+  const length = buffer.length;
+  const bytesPerSample = 2;
+  const blockAlign = channels * bytesPerSample;
+  const dataBytes = length * blockAlign;
+  const arrayBuffer = new ArrayBuffer(44 + dataBytes);
+  const view = new DataView(arrayBuffer);
+
+  function writeString(offset, value) {
+    for (let i = 0; i < value.length; i++) view.setUint8(offset + i, value.charCodeAt(i));
+  }
+
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + dataBytes, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, channels, true);
+  view.setUint32(24, buffer.sampleRate, true);
+  view.setUint32(28, buffer.sampleRate * blockAlign, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, 16, true);
+  writeString(36, 'data');
+  view.setUint32(40, dataBytes, true);
+
+  const channelData = [];
+  for (let c = 0; c < channels; c++) channelData.push(buffer.getChannelData(c));
+  let offset = 44;
+  for (let i = 0; i < length; i++) {
+    for (let c = 0; c < channels; c++) {
+      const sample = Math.max(-1, Math.min(1, channelData[c][i] || 0));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+      offset += 2;
+    }
+  }
+
+  return new Blob([arrayBuffer], { type: 'audio/wav' });
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  window.__enigmaLastExport = { status: 'download-requested', filename, bytes: blob.size };
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+window.__enigmaExportApi = { renderCurrentPresetForExport, audioBufferToWavBlob };
+window.__enigmaLastExport = { status: 'idle' };
+
+const exportButton = document.getElementById('btn-export-wav');
+if (exportButton) {
+  exportButton.addEventListener('click', async () => {
+    const previous = exportButton.textContent;
+    exportButton.disabled = true;
+    exportButton.textContent = 'EXPORTING';
+    window.__enigmaLastExport = { status: 'rendering', preset: currentPresetName };
+    try {
+      const buffer = await renderCurrentPresetForExport();
+      const blob = audioBufferToWavBlob(buffer);
+      window.__enigmaLastExport = { status: 'rendered', preset: currentPresetName, bytes: blob.size, sampleRate: buffer.sampleRate, samples: buffer.length };
+      const safeName = currentPresetName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      downloadBlob(blob, `enigma-${safeName || 'preset'}.wav`);
+      exportButton.textContent = 'SAVED WAV';
+      setTimeout(() => { exportButton.textContent = previous; }, 900);
+    } catch (err) {
+      console.error('[ENIGMA export]', err);
+      window.__enigmaLastExport = { status: 'error', message: err && err.message ? err.message : String(err) };
+      exportButton.textContent = 'EXPORT ERR';
+      setTimeout(() => { exportButton.textContent = previous; }, 1400);
+    } finally {
+      exportButton.disabled = false;
+    }
+  });
 }
 
 document.getElementById('btn-trigger').addEventListener('click', async () => {
