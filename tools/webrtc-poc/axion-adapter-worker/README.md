@@ -21,7 +21,7 @@ https://dim.productions/linkindaw-enigma-probe/
 Current verified Worker version:
 
 ```text
-0a154427-b99d-4f14-9c24-b0822033eb2c
+f37cd237-0b67-48e0-bce1-342c038f86a3
 ```
 
 Do not deploy this Worker to `dim.productions/axion/*` until explicitly approved.
@@ -51,6 +51,7 @@ ENIGMA display/probe verification:
 
 - Root URL returns `ENIGMA Engine - Metallic`.
 - `?linkindaw=webrtc&room=<roomId>` still returns ENIGMA HTML.
+- Automated browser/native WebRTC probe passes and receives ENIGMA `webapp_ready`, `app_title`, `engine_status`, transport ack, and MIDI ack.
 - This route is deployed for display/probe testing and is not FL verified.
 
 Keep these routes as staging experiment URLs until production `/axion/*` is explicitly approved.

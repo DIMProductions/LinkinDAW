@@ -87,7 +87,7 @@ Still needs broader verification:
 - Multiple saved FL projects and reload cycles.
 - Other FL buffer sizes and sample-rate combinations.
 - Multiple plugin instances.
-- Non-Axion Web Audio apps beyond the ENIGMA probe.
+- ENIGMA in FL Studio runtime; ENIGMA WebRTC DataChannel and MIDI ack passed automated browser/native probe, but FL runtime verification is still needed.
 - Final production-grade signaling storage.
 
 ## Public Alpha Scope

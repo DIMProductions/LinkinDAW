@@ -28,7 +28,7 @@ It is not a product release checklist and does not authorize binary releases.
 - FL verified for current Axion staging setup: experimental stereo Audio Return.
 - Implemented but still needs broader verification: full FL project close/reopen pattern-state persistence.
 - Implemented but still needs broader verification: multiple plugin instances.
-- Experimental: ENIGMA probe route exists for non-Axion app testing, but broad arbitrary WebApp compatibility is not claimed.
+- Experimental: ENIGMA probe route exists and automated browser/native WebRTC MIDI ack probe passes, but ENIGMA is not FL verified and broad arbitrary WebApp compatibility is not claimed.
 - Temporary: `linkindaw-signal` currently uses Cloudflare Cache API fallback because Durable Objects hit free-tier request limits.
 
 ## Must Check Before First Push

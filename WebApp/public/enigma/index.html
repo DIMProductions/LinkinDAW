@@ -1072,6 +1072,183 @@ document.getElementById('btn-lock').addEventListener('click', () => {
 updateSeedUI();
 updateLayerDisplay();
 
+// LinkinDAW ENIGMA WebRTC probe adapter
+(function () {
+  const DEFAULT_SIGNALING_BASE = 'https://dim.productions/linkindaw-signal';
+  const params = new URLSearchParams(window.location.search);
+  const transport = params.get('linkindaw') || params.get('linkindawTransport') || params.get('transport');
+  const roomId = params.get('room') || params.get('linkindawRoom') || params.get('linkindaw_room');
+  const enabled = transport === 'webrtc' || params.get('webrtc') === '1' || !!roomId;
+  const signalingBase = (params.get('signal') || params.get('linkindawSignal') || DEFAULT_SIGNALING_BASE).replace(/\/+$/, '');
+  let peer = null;
+  let channel = null;
+  let after = 0;
+  let reconnectTimer = null;
+  let connectAttempt = 0;
+  let closedByAdapter = false;
+
+  function sendJson(value) {
+    if (!channel || channel.readyState !== 'open') return false;
+    channel.send(JSON.stringify(value));
+    return true;
+  }
+
+  function setLinkinDawStatus(text) {
+    const el = document.getElementById('seed-display');
+    if (el && enabled) el.textContent = text;
+  }
+
+  function triggerFromMidi(message) {
+    const status = Number(message.status || 0) & 0xf0;
+    const note = Number(message.note ?? message.data1 ?? 0);
+    const velocity = Number(message.velocity ?? message.data2 ?? 0);
+    if (status === 0x90 && velocity > 0) {
+      const presetNames = Object.keys(Presets);
+      if (presetNames.length) {
+        const nextPreset = presetNames[Math.abs(note) % presetNames.length];
+        if (Presets[nextPreset] && nextPreset !== currentPresetName) {
+          currentPresetName = nextPreset;
+          Object.assign(EngineState, Presets[nextPreset]);
+          updateAllKnobs();
+          updateLayerDisplay();
+          const label = document.getElementById('active-preset-label');
+          if (label) label.innerText = nextPreset;
+          document.querySelectorAll('.tab').forEach((tab) => {
+            tab.classList.toggle('active', tab.getAttribute('data-preset') === nextPreset);
+          });
+        }
+      }
+      const trigger = document.getElementById('btn-trigger');
+      if (trigger) trigger.click();
+      setLinkinDawStatus(`MIDI ${note}`);
+    }
+  }
+
+  function dispatchInbound(message) {
+    if (!message || typeof message !== 'object') return;
+    if (message.type === 'midi') {
+      triggerFromMidi(message);
+    } else if (message.type === 'system' && message.command === 'transport') {
+      setLinkinDawStatus(message.value?.playing ? 'DAW PLAY' : 'DAW STOP');
+    }
+  }
+
+  async function postSignal(message) {
+    const res = await fetch(`${signalingBase}/rooms/${encodeURIComponent(roomId)}/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(message),
+    });
+    if (!res.ok) throw new Error(`signal POST ${res.status}: ${await res.text()}`);
+    return res.json();
+  }
+
+  async function pollSignal(kind, timeoutMs) {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      const res = await fetch(`${signalingBase}/rooms/${encodeURIComponent(roomId)}/messages?to=browser&after=${after}`);
+      if (!res.ok) throw new Error(`signal GET ${res.status}: ${await res.text()}`);
+      const data = await res.json();
+      for (const message of data.messages || []) {
+        after = Math.max(after, message.id || 0);
+        if (!kind || message.kind === kind) return message;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    throw new Error(`timeout waiting for ${kind}`);
+  }
+
+  async function waitForIceGatheringComplete(pc) {
+    if (pc.iceGatheringState === 'complete') return;
+    await new Promise((resolve) => {
+      const timer = setTimeout(resolve, 5000);
+      pc.addEventListener('icegatheringstatechange', () => {
+        if (pc.iceGatheringState === 'complete') {
+          clearTimeout(timer);
+          resolve();
+        }
+      });
+    });
+  }
+
+  function scheduleReconnect(reason) {
+    if (closedByAdapter || !enabled || reconnectTimer) return;
+    console.warn('[LinkinDAW ENIGMA]', 'reconnect scheduled', reason);
+    reconnectTimer = window.setTimeout(() => {
+      reconnectTimer = null;
+      connect().catch((error) => {
+        console.warn('[LinkinDAW ENIGMA]', 'connect failed', error);
+        scheduleReconnect('connect failed');
+      });
+    }, 2000);
+  }
+
+  async function connect() {
+    if (!enabled) return;
+    if (!roomId) {
+      console.warn('[LinkinDAW ENIGMA]', 'missing room id');
+      return;
+    }
+    const attempt = ++connectAttempt;
+    closedByAdapter = false;
+    if (reconnectTimer) {
+      window.clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
+    try { if (channel) channel.onclose = null; channel.close(); } catch {}
+    try { peer?.close(); } catch {}
+    after = 0;
+    setLinkinDawStatus('LINKING');
+    peer = new RTCPeerConnection({ iceServers: [] });
+    channel = peer.createDataChannel('linkindaw-enigma-adapter');
+    channel.onopen = () => {
+      setLinkinDawStatus('LINKED');
+      sendJson({ type: 'system', command: 'webapp_ready', value: { app: 'ENIGMA', title: document.title, href: window.location.href } });
+      sendJson({ type: 'system', command: 'app_title', value: 'ENIGMA' });
+      sendJson({ type: 'system', command: 'engine_status', value: 'streaming' });
+    };
+    channel.onmessage = (event) => {
+      let parsed = null;
+      try { parsed = JSON.parse(event.data); } catch {}
+      if (parsed) dispatchInbound(parsed);
+      channel.send(`ack:${parsed?.type || 'raw'}:${parsed?.command || parsed?.statusMsg || 'message'}`);
+    };
+    channel.onclose = () => {
+      setLinkinDawStatus('UNLINKED');
+      if (!closedByAdapter && attempt === connectAttempt) scheduleReconnect('channel closed');
+    };
+    peer.onconnectionstatechange = () => setLinkinDawStatus(peer.connectionState.toUpperCase());
+    const offer = await peer.createOffer();
+    await peer.setLocalDescription(offer);
+    await waitForIceGatheringComplete(peer);
+    await postSignal({ from: 'browser', to: 'native', kind: 'offer', sdp: peer.localDescription.sdp });
+    const answer = await pollSignal('answer', 30000);
+    await peer.setRemoteDescription({ type: 'answer', sdp: answer.sdp });
+  }
+
+    const adapterApi = {
+    enabled,
+    roomId,
+    signalingBase,
+    connect,
+    triggerFromMidi,
+    get state() {
+      return {
+        enabled,
+        roomId,
+        signalingBase,
+        channelState: channel?.readyState || 'none',
+        peerState: peer?.connectionState || 'none',
+      };
+    },
+  };
+  window.__linkinDawEnigmaAdapter = adapterApi;
+  window.__linkinDawWebRTCAdapter = adapterApi;
+  if (enabled) connect().catch((error) => {
+    console.warn('[LinkinDAW ENIGMA]', 'connect failed', error);
+    scheduleReconnect('connect failed');
+  });
+}());
 </script>
 </body>
 </html>
